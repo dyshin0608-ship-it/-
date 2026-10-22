@@ -1,27 +1,73 @@
 # medi
 
-복약 알림 앱 (Expo + React Native + TypeScript).
+안드로이드 **복약 알림** 앱. Expo (React Native) + TypeScript.
 
-화면은 1개이며, 가운데에 **복약 알림** 이라고 크게 표시됩니다.
+## 이 앱의 약속
 
-## 구성
+> **알림이 반드시 온다. 광고는 없다.**
 
-| 파일 | 설명 |
-| --- | --- |
-| `app/_layout.tsx` | expo-router 루트 레이아웃 (헤더 없는 Stack) |
-| `app/index.tsx` | 유일한 화면 — 가운데 "복약 알림" 텍스트 |
-| `app.json` | 앱 이름/슬러그, 안드로이드 패키지명(`com.medi.app`), 아이콘, expo-router 플러그인 |
-| `eas.json` | EAS Build 프로필 (`preview` = 설치용 APK, `production` = 스토어용 AAB) |
-| `assets/` | 앱 아이콘 |
+기능을 늘리는 앱이 아니라, 경쟁 앱들이 못 하는 한 가지를 제대로 하는 앱입니다.
 
-- Expo SDK 58 / React Native 0.88 / TypeScript
-- 라우팅: `expo-router` (`package.json`의 `main`이 `expo-router/entry`)
+- **알림은 전부 로컬 예약 알림** (`expo-notifications`의 `scheduleNotificationAsync`).
+  서버 푸시를 쓰지 않습니다. 인터넷이 끊겨도, 서버가 죽어도 알림은 기기 안에서 울립니다.
+- **서버도, 로그인도, 계정도 없습니다.** 데이터는 전부 기기 안(`AsyncStorage`)에만 저장됩니다.
+- **광고 없음, 결제 없음.**
+
+## 첫 버전 기능 (이 여섯 개만)
+
+| # | 기능 | 상태 |
+| --- | --- | --- |
+| 1 | 약 등록 — 이름, 복용 시각(하루 여러 번), 시작일/종료일 | ✅ 완료 |
+| 2 | 로컬 예약 알림 — 등록한 시각에 정확히 울림 | ⬜ 예정 |
+| 3 | "먹었어요" 체크 — 누르면 그날 그 시각 알림은 다시 안 옴 | ⬜ 예정 |
+| 4 | 기록 화면 — 날짜별 복용 여부 확인, 지난 기록 시간 수정·삭제 | ⬜ 예정 |
+| 5 | 알림음 선택 + 10분 뒤 다시 알림 | ⬜ 예정 |
+| 6 | 광고·로그인·결제 없음 | ✅ 설계 전제 |
+
+넣지 않는 것: 약 정보 검색, 의약품 DB, 복약 지도, 그 외 위 여섯 개 밖의 기능.
+
+## 구조
+
+```
+app/
+  _layout.tsx            expo-router 루트 Stack
+  index.tsx              약 목록 (등록된 약, 복용 시각, 복용 기간)
+  medication/new.tsx     약 등록
+  medication/[id].tsx    약 수정 · 삭제
+src/
+  lib/types.ts           Medication 타입
+  lib/date.ts            날짜·시각 계산 (로컬 시간 기준, "YYYY-MM-DD" / "HH:MM")
+  lib/storage.ts         AsyncStorage 읽기·쓰기 (기기 안에만 저장)
+  components/
+    MedicationForm.tsx   등록·수정 공용 폼
+    AppButton.tsx        버튼
+  theme.ts               색·여백
+app.json                 안드로이드 패키지명(com.medi.app), 아이콘, expo-router 플러그인
+eas.json                 EAS Build 프로필 (preview = 설치용 APK)
+```
+
+### 저장되는 데이터
+
+```ts
+type Medication = {
+  id: string;
+  name: string;           // 약 이름
+  times: string[];        // 하루 복용 시각 "HH:MM", 오름차순
+  startDate: string;      // 복용 시작일 "YYYY-MM-DD"
+  endDate: string | null; // 종료일. null이면 종료일 없이 계속 복용
+  createdAt: string;
+};
+```
+
+날짜를 `Date.toISOString()`이 아니라 **로컬 시간 기준 `"YYYY-MM-DD"` 문자열**로 다룹니다.
+UTC로 바꾸면 자정 전후에 날짜가 하루 밀리는데, 그게 바로
+*"12시 넘어서 체크하면 다음날 먹은 걸로 되는데 수정할 수가 없더라구요"* 류의 버그가 생기는 지점입니다.
 
 ## 컴퓨터에서 개발할 때
 
 ```bash
 npm install
-npm start          # Expo Dev Server 실행 후 Expo Go 또는 개발 빌드로 접속
+npm start          # Expo Dev Server
 npx tsc --noEmit   # 타입 체크
 ```
 
@@ -133,7 +179,7 @@ EAS가 "이 소스코드가 내 Expo 프로젝트"라는 걸 알아야 하므로
 | APK 대신 AAB가 나왔다 | 빌드 프로필을 `production`으로 골랐습니다. `preview`로 다시 빌드하세요 |
 | 설치 버튼을 눌렀는데 "앱을 설치할 수 없음" | 같은 패키지명(`com.medi.app`)의 앱이 **다른 서명**으로 이미 깔려 있습니다. 기존 앱을 삭제하고 다시 설치하세요 |
 | 빌드가 월 한도 초과로 막힌다 | 무료 플랜 한도입니다. 다음 달을 기다리거나 유료 플랜으로 올리세요 (https://expo.dev/pricing) |
-| Expo Go로 먼저 확인하고 싶다 | 이 앱은 추가 네이티브 모듈이 없어서 Expo Go로도 미리보기가 가능합니다. 단, Dev Server를 돌릴 컴퓨터가 필요하므로 폰만 있을 때는 위의 APK 빌드가 더 확실합니다 |
+| Expo Go로 먼저 확인하고 싶다 | Dev Server를 돌릴 컴퓨터가 필요합니다. 게다가 2번(로컬 알림)이 들어가면 Expo Go의 안드로이드에서는 알림이 동작하지 않으므로, 폰만 있을 때는 위의 `preview` APK 빌드가 유일하고 확실한 길입니다 |
 
 ## 참고: 터미널을 쓸 수 있다면
 
