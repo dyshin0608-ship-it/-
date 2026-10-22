@@ -98,3 +98,32 @@ export function formatCountdown(at: Date, now: Date = new Date()): string {
   }
   return `${Math.floor(hours / 24)}일 뒤`;
 }
+
+/** 그 달의 1일. "2026-10-22" -> "2026-10-01" */
+export function startOfMonth(value: DateString): DateString {
+  return `${value.slice(0, 7)}-01`;
+}
+
+/** 달을 앞뒤로 옮긴다. 말일이 없는 달로 가도 1일 기준이라 안전하다. */
+export function addMonths(value: DateString, months: number): DateString {
+  const [y, m] = value.split('-').map(Number);
+  const total = (y * 12 + (m - 1)) + months;
+  return `${Math.floor(total / 12)}-${pad((total % 12) + 1)}-01`;
+}
+
+/** 그 달의 날수. */
+export function daysInMonth(value: DateString): number {
+  const [y, m] = value.split('-').map(Number);
+  return new Date(y, m, 0).getDate();
+}
+
+/** 그 달 1일의 요일 (0=일요일). 달력 첫 줄의 빈칸 수가 된다. */
+export function firstWeekday(value: DateString): number {
+  return parseDate(startOfMonth(value)).getDay();
+}
+
+/** "2026년 10월" */
+export function formatMonth(value: DateString): string {
+  const [y, m] = value.split('-').map(Number);
+  return `${y}년 ${m}월`;
+}

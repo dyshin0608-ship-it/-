@@ -1,6 +1,6 @@
 import { usePathname } from 'expo-router';
 import { TabList, TabSlot, TabTrigger, Tabs } from 'expo-router/ui';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Icon, type IconName } from '../../src/components/Icon';
@@ -14,10 +14,10 @@ const TABS: { name: string; href: string; label: string; icon: IconName }[] = [
 
 /**
  * 아래쪽 탭. expo-router의 headless Tabs라 탭 바를 직접 그린다.
- * 그래서 앱의 다른 화면과 같은 아이콘·색·글자 규칙을 그대로 쓴다.
  *
- * 버튼은 반드시 Pressable이어야 한다. TabTrigger는 asChild로 onPress를
- * 자식에게 넘기는데, View는 onPress를 받지 못해 탭이 눌리지 않는다.
+ * asChild는 쓰지 않는다. 그 경로에서는 expo-router가 flexDirection: 'row'를
+ * 얹어 아이콘과 글자가 가로로 붙어 버린다. asChild 없이 쓰면 TabTrigger가
+ * 자기 스타일을 먼저 깔고 내 style을 뒤에 덮으므로 세로로 쌓인다.
  */
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
@@ -33,16 +33,17 @@ export default function TabLayout() {
             const active = tab.href === '/' ? pathname === '/' : pathname.startsWith(tab.href);
             const tint = active ? colors.brand : colors.textSecondary;
             return (
-              <TabTrigger key={tab.name} name={tab.name} href={tab.href} asChild>
-                <Pressable
-                  accessibilityRole="tab"
-                  accessibilityState={{ selected: active }}
-                  accessibilityLabel={tab.label}
-                  style={({ pressed }) => [styles.tab, pressed && styles.pressed]}
-                >
-                  <Icon name={tab.icon} size="lg" color={tint} />
-                  <Text style={[styles.label, { color: tint }]}>{tab.label}</Text>
-                </Pressable>
+              <TabTrigger
+                key={tab.name}
+                name={tab.name}
+                href={tab.href}
+                style={styles.tab}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: active }}
+                accessibilityLabel={tab.label}
+              >
+                <Icon name={tab.icon} size="lg" color={tint} />
+                <Text style={[styles.label, { color: tint }]}>{tab.label}</Text>
               </TabTrigger>
             );
           })}
@@ -63,11 +64,11 @@ const styles = StyleSheet.create({
   tab: {
     flex: 1,
     minHeight: hitTarget,
+    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 2,
     paddingVertical: spacing.xs,
   },
-  pressed: { opacity: 0.6 },
   label: { ...type.caption, fontSize: 11, fontWeight: '600' },
 });
