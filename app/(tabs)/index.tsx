@@ -3,18 +3,18 @@ import { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { AlarmStatusCard } from '../src/components/AlarmStatusCard';
-import { Icon, type IconName } from '../src/components/Icon';
-import { Button, EmptyState, IconButton, Row, Section } from '../src/components/ui';
+import { AlarmStatusCard } from '../../src/components/AlarmStatusCard';
+import { Icon, type IconName } from '../../src/components/Icon';
+import { Button, EmptyState, IconButton, Row, Section } from '../../src/components/ui';
 import { Pressable } from 'react-native';
-import { useAlarmStatus } from '../src/hooks/useAlarmStatus';
+import { useAlarmStatus } from '../../src/hooks/useAlarmStatus';
 import {
   doseKey,
   getDoseRecords,
   setDoseStatus,
   type DoseRecords,
   type DoseStatus,
-} from '../src/lib/doses';
+} from '../../src/lib/doses';
 import {
   dayCount,
   formatCountdown,
@@ -23,12 +23,12 @@ import {
   formatRelativeDay,
   formatTime,
   today,
-} from '../src/lib/date';
-import { syncSchedule } from '../src/lib/notifications';
-import { dosesForDate, type DayDose, type DoseOccurrence } from '../src/lib/schedule';
-import { getMedications } from '../src/lib/storage';
-import type { Medication } from '../src/lib/types';
-import { colors, gutter, radius, spacing, type } from '../src/theme';
+} from '../../src/lib/date';
+import { syncSchedule } from '../../src/lib/notifications';
+import { dosesForDate, type DayDose, type DoseOccurrence } from '../../src/lib/schedule';
+import { getMedications } from '../../src/lib/storage';
+import type { Medication } from '../../src/lib/types';
+import { colors, gutter, hitTarget, radius, spacing, type } from '../../src/theme';
 
 export default function HomeScreen() {
   const [medications, setMedications] = useState<Medication[] | null>(null);
@@ -79,7 +79,7 @@ export default function HomeScreen() {
           <Text style={styles.brand}>또박</Text>
           <Text style={styles.headerDate}>{formatDateWithWeekday(todayDate)}</Text>
         </View>
-        <IconButton name="bell" label="예약된 알림 보기" onPress={() => router.push('/alarms')} />
+        <IconButton name="bell" label="알림 설정 보기" onPress={() => router.push('/settings')} />
       </View>
 
       <ScrollView
@@ -210,6 +210,10 @@ const STATUS_VIEW: Record<DoseStatus, { icon: IconName; label: string; color: st
   unknown: { icon: 'box-question', label: '모르겠어요', color: colors.warning },
 };
 
+/**
+ * 한 회차. 줄 전체가 누를 수 있는 영역이다 — 작은 네모만 정확히 노리지 않아도 된다.
+ * 네모를 왼쪽에 두어 할 일 목록처럼 읽히게 했다.
+ */
 function TodayRow({
   dose,
   now,
@@ -228,38 +232,33 @@ function TodayRow({
   const dim = past && !view;
 
   return (
-    <Row
-      first={first}
-      leading={<Icon name="clock" size="md" color={dim ? colors.textSecondary : colors.brand} />}
+    <Pressable
+      onPress={onCycle}
+      accessibilityRole="button"
+      accessibilityLabel={
+        view
+          ? `${formatTime(dose.time)} ${dose.medicationName} ${view.label}. 바꾸려면 누르세요`
+          : `${formatTime(dose.time)} ${dose.medicationName} 복용 표시하기`
+      }
+      style={({ pressed }) => [
+        styles.todayRow,
+        !first && styles.todayDivider,
+        pressed && styles.todayPressed,
+      ]}
     >
-      <View style={styles.todayRow}>
-        <Text style={[styles.todayTime, dim && styles.todayPast]}>{formatTime(dose.time)}</Text>
-        <Text style={[styles.todayName, dim && styles.todayPast]} numberOfLines={1}>
-          {dose.medicationName}
-        </Text>
-
-        <Pressable
-          onPress={onCycle}
-          accessibilityRole="button"
-          accessibilityLabel={
-            view
-              ? `${dose.medicationName} ${formatTime(dose.time)} ${view.label}. 바꾸려면 누르세요`
-              : `${dose.medicationName} ${formatTime(dose.time)} 복용 표시하기`
-          }
-          hitSlop={8}
-          style={({ pressed }) => [styles.mark, pressed && styles.markPressed]}
-        >
-          <Icon
-            name={view ? view.icon : 'box'}
-            size="lg"
-            color={view ? view.color : colors.textSecondary}
-          />
-          <Text style={[styles.markLabel, { color: view ? view.color : colors.textSecondary }]}>
-            {view ? view.label : past ? '지난 시각' : '예정'}
-          </Text>
-        </Pressable>
-      </View>
-    </Row>
+      <Icon
+        name={view ? view.icon : 'box'}
+        size="lg"
+        color={view ? view.color : dim ? colors.textSecondary : colors.brand}
+      />
+      <Text style={[styles.todayTime, dim && styles.todayPast]}>{formatTime(dose.time)}</Text>
+      <Text style={[styles.todayName, dim && styles.todayPast]} numberOfLines={1}>
+        {dose.medicationName}
+      </Text>
+      <Text style={[styles.todayState, { color: view ? view.color : colors.textSecondary }]}>
+        {view ? view.label : past ? '지난 시각' : '예정'}
+      </Text>
+    </Pressable>
   );
 }
 
@@ -350,13 +349,19 @@ const styles = StyleSheet.create({
   nextEmpty: { backgroundColor: colors.bgAlt, borderRadius: radius.md, padding: spacing.lg },
   nextEmptyText: { ...type.body, color: colors.textSecondary },
 
-  todayRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  todayTime: { ...type.bodyStrong, color: colors.text, minWidth: 88 },
+  todayRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    minHeight: hitTarget + 8,
+    paddingVertical: spacing.md,
+  },
+  todayDivider: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
+  todayPressed: { backgroundColor: colors.bgAlt },
+  todayTime: { ...type.bodyStrong, color: colors.text, minWidth: 84 },
   todayName: { ...type.body, color: colors.textSecondary, flex: 1 },
+  todayState: { ...type.caption, textAlign: 'right' },
   todayPast: { color: colors.textSecondary },
-  mark: { alignItems: 'center', gap: 2, minWidth: 64 },
-  markPressed: { opacity: 0.55 },
-  markLabel: { ...type.caption, fontSize: 11, textAlign: 'center' },
 
   medHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   medName: { ...type.bodyStrong, color: colors.text, flexShrink: 1 },

@@ -42,9 +42,8 @@ export default function RootLayout() {
           contentStyle: { backgroundColor: colors.bg },
         }}
       >
-        {/* 홈은 브랜드 머리글을 화면 안에서 직접 그린다. */}
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="alarms" options={{ title: '예약된 알림' }} />
+        {/* 탭(홈·기록·알림)은 각 화면이 머리글을 직접 그린다. */}
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="medication/new" options={{ title: '약 등록' }} />
         <Stack.Screen name="medication/[id]" options={{ title: '약 수정' }} />
         <Stack.Screen name="drug/[seq]" options={{ title: '약 정보' }} />

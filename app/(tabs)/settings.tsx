@@ -2,9 +2,9 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { Icon } from '../src/components/Icon';
-import { Button, Notice, Row, Section } from '../src/components/ui';
-import { formatDate, formatRelativeDay, formatTime } from '../src/lib/date';
+import { Icon } from '../../src/components/Icon';
+import { Button, Notice, Row, Section } from '../../src/components/ui';
+import { formatDate, formatRelativeDay, formatTime } from '../../src/lib/date';
 import {
   readPermissions,
   readScheduledDoses,
@@ -12,8 +12,8 @@ import {
   syncSchedule,
   type PermissionState,
   type ScheduledDose,
-} from '../src/lib/notifications';
-import { colors, gutter, radius, spacing, type } from '../src/theme';
+} from '../../src/lib/notifications';
+import { colors, gutter, radius, spacing, type } from '../../src/theme';
 
 const TEST_DELAY_SECONDS = 60;
 
