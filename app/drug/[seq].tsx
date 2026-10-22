@@ -1,9 +1,11 @@
 import { useLocalSearchParams } from 'expo-router';
 import { Linking, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { BodyMap } from '../../src/components/BodyMap';
 import { Button, Notice, Section } from '../../src/components/ui';
 import {
   bodyPartsFor,
+  bodyRegionsFor,
   getDrug,
   officialUrl,
   SOURCE_NAME,
@@ -30,6 +32,7 @@ export default function DrugScreen() {
   }
 
   const bodyParts = bodyPartsFor(drug.efficacy);
+  const bodyRegions = bodyRegionsFor(bodyParts);
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
@@ -51,6 +54,7 @@ export default function DrugScreen() {
 
       {bodyParts.length > 0 && (
         <Section title="이 약이 쓰이는 곳">
+          {bodyRegions.length > 0 && <BodyMap regions={bodyRegions} />}
           <View style={styles.chips}>
             {bodyParts.map((part) => (
               <View key={part} style={styles.chip}>
@@ -60,6 +64,7 @@ export default function DrugScreen() {
           </View>
           <Text style={styles.chipNote}>
             아래 효능효과 문장에 적힌 부위를 뽑은 것입니다. 원문을 함께 확인하세요.
+            열처럼 몸 전체에 해당하는 증상은 그림에 표시되지 않습니다.
           </Text>
         </Section>
       )}

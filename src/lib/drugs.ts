@@ -117,3 +117,49 @@ export function bodyPartsFor(efficacy: string): string[] {
   }
   return parts;
 }
+
+/** 인체 그림에서 칠할 수 있는 영역. */
+export type BodyRegion =
+  | 'head'
+  | 'eyes'
+  | 'nose'
+  | 'mouth'
+  | 'ears'
+  | 'neck'
+  | 'chest'
+  | 'abdomen'
+  | 'pelvis'
+  | 'limbs'
+  | 'skin';
+
+/**
+ * 부위 꼬리표를 인체 그림의 영역으로 옮긴다.
+ *
+ * "열"은 몸 어느 한 곳이 아니라 전신 증상이라 그림에는 칠하지 않는다.
+ * 해열제가 온몸을 빨갛게 칠해 버리면 그림이 아무것도 말해 주지 못한다.
+ * 꼬리표에는 그대로 남으므로 정보가 사라지지는 않는다.
+ */
+const REGION_BY_PART: Record<string, BodyRegion[]> = {
+  열: [],
+  머리: ['head'],
+  눈: ['eyes'],
+  코: ['nose'],
+  목: ['neck'],
+  '치아·잇몸': ['mouth'],
+  귀: ['ears'],
+  '가슴·기관지': ['chest'],
+  '배·속': ['abdomen'],
+  아랫배: ['pelvis'],
+  '근육·관절': ['limbs'],
+  피부: ['skin'],
+};
+
+export function bodyRegionsFor(parts: string[]): BodyRegion[] {
+  const regions = new Set<BodyRegion>();
+  for (const part of parts) {
+    for (const region of REGION_BY_PART[part] ?? []) {
+      regions.add(region);
+    }
+  }
+  return [...regions];
+}
