@@ -128,3 +128,37 @@ export function parseDoseNotificationId(
   }
   return { medicationId, date, time: `${hour}:${minute}` };
 }
+
+/** 하루치 복용 시각 하나. 이미 지난 시각도 포함한다. */
+export type DayDose = {
+  medicationId: string;
+  medicationName: string;
+  time: TimeString;
+  at: Date;
+};
+
+/**
+ * 어떤 날짜에 먹어야 할 복용 시각 전부.
+ *
+ * buildOccurrences와 달리 지난 시각도 돌려준다. 알림 예약이 아니라
+ * "오늘 일정"을 화면에 보여 주기 위한 것이다. 예약 로직은 건드리지 않는다.
+ */
+export function dosesForDate(medications: Medication[], date: DateString): DayDose[] {
+  const doses: DayDose[] = [];
+
+  for (const medication of medications) {
+    if (date < medication.startDate) continue;
+    if (medication.endDate && date > medication.endDate) continue;
+    for (const time of medication.times) {
+      doses.push({
+        medicationId: medication.id,
+        medicationName: medication.name,
+        time,
+        at: doseDateTime(date, time),
+      });
+    }
+  }
+
+  doses.sort((a, b) => a.at.getTime() - b.at.getTime());
+  return doses;
+}

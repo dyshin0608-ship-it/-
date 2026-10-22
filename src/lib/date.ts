@@ -78,3 +78,23 @@ export function formatRelativeDay(value: DateString): string {
   if (value === addDays(now, 1)) return '내일';
   return formatDateShort(value);
 }
+
+/** "2026-10-22" -> "10월 22일 수요일" */
+export function formatDateWithWeekday(value: DateString): string {
+  const date = parseDate(value);
+  const weekday = ['일', '월', '화', '수', '목', '금', '토'][date.getDay()];
+  return `${date.getMonth() + 1}월 ${date.getDate()}일 ${weekday}요일`;
+}
+
+/** 다음 알림까지 남은 시간. "12분 뒤", "3시간 20분 뒤", "2일 뒤" */
+export function formatCountdown(at: Date, now: Date = new Date()): string {
+  const minutes = Math.round((at.getTime() - now.getTime()) / 60_000);
+  if (minutes <= 0) return '곧';
+  if (minutes < 60) return `${minutes}분 뒤`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) {
+    const rest = minutes % 60;
+    return rest === 0 ? `${hours}시간 뒤` : `${hours}시간 ${rest}분 뒤`;
+  }
+  return `${Math.floor(hours / 24)}일 뒤`;
+}

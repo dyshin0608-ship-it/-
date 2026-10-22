@@ -9,7 +9,7 @@ import {
   requestNotificationPermission,
   syncSchedule,
 } from '../src/lib/notifications';
-import { colors } from '../src/theme';
+import { colors, type } from '../src/theme';
 
 // 알림이 도착하기 전에 정해져 있어야 하므로 모듈이 로드될 때 바로 설정한다.
 configureNotificationHandler();
@@ -34,14 +34,16 @@ export default function RootLayout() {
       <StatusBar style="dark" />
       <Stack
         screenOptions={{
-          headerStyle: { backgroundColor: colors.background },
-          headerTitleStyle: { fontSize: 19, fontWeight: '700', color: colors.text },
-          headerTintColor: colors.text,
+          headerStyle: { backgroundColor: colors.surface },
+          headerTitleStyle: { ...type.heading, color: colors.text },
+          headerTintColor: colors.brand,
           headerShadowVisible: false,
-          contentStyle: { backgroundColor: colors.background },
+          headerBackButtonDisplayMode: 'minimal',
+          contentStyle: { backgroundColor: colors.bg },
         }}
       >
-        <Stack.Screen name="index" options={{ title: '또박' }} />
+        {/* 홈은 브랜드 머리글을 화면 안에서 직접 그린다. */}
+        <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="alarms" options={{ title: '예약된 알림' }} />
         <Stack.Screen name="medication/new" options={{ title: '약 등록' }} />
         <Stack.Screen name="medication/[id]" options={{ title: '약 수정' }} />

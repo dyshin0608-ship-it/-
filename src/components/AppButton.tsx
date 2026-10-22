@@ -1,34 +1,58 @@
-import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { colors, radius, spacing } from '../theme';
+import { colors, hitTarget, radius, spacing, type } from '../theme';
+
+type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
+type Size = 'md' | 'sm';
 
 type Props = {
   label: string;
   onPress: () => void;
-  variant?: 'primary' | 'secondary' | 'danger';
+  variant?: Variant;
+  size?: Size;
   disabled?: boolean;
   loading?: boolean;
+  /** 아이콘 자리에 넣을 짧은 기호. 글자와 같은 색을 따라간다. */
+  leading?: string;
+  accessibilityHint?: string;
 };
 
-export function AppButton({ label, onPress, variant = 'primary', disabled, loading }: Props) {
+export function AppButton({
+  label,
+  onPress,
+  variant = 'primary',
+  size = 'md',
+  disabled,
+  loading,
+  leading,
+  accessibilityHint,
+}: Props) {
   const isDisabled = disabled || loading;
   return (
     <Pressable
       onPress={onPress}
       disabled={isDisabled}
       accessibilityRole="button"
-      accessibilityState={{ disabled: !!isDisabled }}
+      accessibilityLabel={label}
+      accessibilityHint={accessibilityHint}
+      accessibilityState={{ disabled: !!isDisabled, busy: !!loading }}
       style={({ pressed }) => [
         styles.base,
-        styles[variant],
-        pressed && !isDisabled && styles.pressed,
+        size === 'sm' ? styles.sizeSm : styles.sizeMd,
+        surfaces[variant],
+        pressed && !isDisabled && pressedSurfaces[variant],
         isDisabled && styles.disabled,
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={variant === 'primary' ? colors.primaryText : colors.primary} />
+        <ActivityIndicator color={variant === 'primary' ? colors.onBrand : colors.brand} />
       ) : (
-        <Text style={[styles.label, labelStyles[variant]]}>{label}</Text>
+        <View style={styles.row}>
+          {leading && <Text style={[styles.leading, labels[variant]]}>{leading}</Text>}
+          <Text style={[size === 'sm' ? styles.labelSm : styles.label, labels[variant]]}>
+            {label}
+          </Text>
+        </View>
       )}
     </Pressable>
   );
@@ -36,22 +60,38 @@ export function AppButton({ label, onPress, variant = 'primary', disabled, loadi
 
 const styles = StyleSheet.create({
   base: {
-    minHeight: 56,
     borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: spacing.lg,
+    borderWidth: 1,
   },
-  primary: { backgroundColor: colors.primary },
-  secondary: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
-  danger: { backgroundColor: colors.background, borderWidth: 1, borderColor: colors.danger },
-  pressed: { opacity: 0.75 },
-  disabled: { opacity: 0.4 },
-  label: { fontSize: 18, fontWeight: '700' },
+  // 높이를 고정하지 않고 최소 높이 + 여백으로 잡는다. 시스템 글자를 키워도 글자가 잘리지 않는다.
+  sizeMd: { minHeight: hitTarget + 4, paddingHorizontal: spacing.xl, paddingVertical: spacing.md },
+  sizeSm: { minHeight: 40, paddingHorizontal: spacing.lg, paddingVertical: spacing.sm },
+  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  leading: { ...type.bodyStrong },
+  label: { ...type.bodyStrong, textAlign: 'center' },
+  labelSm: { ...type.label, textAlign: 'center' },
+  disabled: { opacity: 0.45 },
 });
 
-const labelStyles = StyleSheet.create({
-  primary: { color: colors.primaryText },
+const surfaces = StyleSheet.create({
+  primary: { backgroundColor: colors.brand, borderColor: colors.brand },
+  secondary: { backgroundColor: colors.surface, borderColor: colors.borderStrong },
+  ghost: { backgroundColor: 'transparent', borderColor: 'transparent' },
+  danger: { backgroundColor: colors.surface, borderColor: colors.dangerBorder },
+});
+
+const pressedSurfaces = StyleSheet.create({
+  primary: { backgroundColor: colors.brandPressed, borderColor: colors.brandPressed },
+  secondary: { backgroundColor: colors.surfaceAlt },
+  ghost: { backgroundColor: colors.surfaceAlt },
+  danger: { backgroundColor: colors.dangerSoft },
+});
+
+const labels = StyleSheet.create({
+  primary: { color: colors.onBrand },
   secondary: { color: colors.text },
+  ghost: { color: colors.brand },
   danger: { color: colors.danger },
 });

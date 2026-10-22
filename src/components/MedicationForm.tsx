@@ -1,14 +1,6 @@
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useState } from 'react';
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Switch,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import {
   addDays,
@@ -24,8 +16,9 @@ import {
   toTimeString,
 } from '../lib/date';
 import type { DateString, Medication, MedicationInput, TimeString } from '../lib/types';
-import { colors, radius, spacing } from '../theme';
+import { colors, hitTarget, radius, spacing, type } from '../theme';
 import { AppButton } from './AppButton';
+import { Card } from './Card';
 
 /** 감기약처럼 기간이 정해진 약을 빨리 넣을 수 있게 하는 단축 버튼. */
 const DURATION_PRESETS = [3, 5, 7, 14] as const;
@@ -37,6 +30,9 @@ const NAME_MAX = 40;
 type PickerTarget =
   | { kind: 'time'; index: number | 'new' }
   | { kind: 'date'; field: 'start' | 'end' };
+
+/** 항목별 오류. 어느 칸이 잘못됐는지 그 칸 아래에 바로 보여 준다. */
+type Errors = { name?: string; times?: string; endDate?: string };
 
 type Props = {
   /** 수정일 때 기존 약. 등록이면 넘기지 않는다. */
@@ -53,12 +49,12 @@ export function MedicationForm({ medication, submitLabel, onSubmit, onDelete, sa
   const [startDate, setStartDate] = useState<DateString>(medication?.startDate ?? today());
   const [endDate, setEndDate] = useState<DateString | null>(medication?.endDate ?? null);
   const [picker, setPicker] = useState<PickerTarget | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Errors>({});
 
   const hasEndDate = endDate !== null;
 
-  function openTimePicker(index: number | 'new') {
-    setPicker({ kind: 'time', index });
+  function clearError(field: keyof Errors) {
+    setErrors((prev) => (prev[field] ? { ...prev, [field]: undefined } : prev));
   }
 
   function handlePickerChange(event: DateTimePickerEvent, picked?: Date) {
@@ -70,10 +66,10 @@ export function MedicationForm({ medication, submitLabel, onSubmit, onDelete, sa
       const value = toTimeString(picked);
       const duplicate = times.some((t, i) => t === value && i !== target.index);
       if (duplicate) {
-        setError('이미 같은 시각이 있습니다.');
+        setErrors((prev) => ({ ...prev, times: '이미 같은 시각이 있습니다.' }));
         return;
       }
-      setError(null);
+      clearError('times');
       setTimes((prev) =>
         sortTimes(
           target.index === 'new'
@@ -92,39 +88,27 @@ export function MedicationForm({ medication, submitLabel, onSubmit, onDelete, sa
     } else {
       setEndDate(value);
     }
-    setError(null);
+    clearError('endDate');
   }
 
-  function removeTime(index: number) {
-    setTimes((prev) => prev.filter((_, i) => i !== index));
-  }
-
-  function toggleEndDate(enabled: boolean) {
-    // 기본값은 "오늘부터 7일" — 기간이 정해진 약에서 가장 흔한 경우다.
-    setEndDate(enabled ? addDays(startDate, 6) : null);
-    setError(null);
-  }
-
-  function applyPreset(days: number) {
-    setEndDate(addDays(startDate, days - 1));
-    setError(null);
+  function setOngoing(ongoing: boolean) {
+    // 기간을 정할 때 기본값은 "오늘부터 7일" — 가장 흔한 경우다.
+    setEndDate(ongoing ? null : addDays(startDate, 6));
+    clearError('endDate');
   }
 
   function handleSubmit() {
     const trimmed = name.trim();
-    if (!trimmed) {
-      setError('약 이름을 입력해 주세요.');
+    const next: Errors = {};
+    if (!trimmed) next.name = '약 이름을 입력해 주세요.';
+    if (times.length === 0) next.times = '복용 시각을 한 개 이상 추가해 주세요.';
+    if (endDate && endDate < startDate) next.endDate = '종료일이 시작일보다 앞설 수 없습니다.';
+
+    if (next.name || next.times || next.endDate) {
+      setErrors(next);
       return;
     }
-    if (times.length === 0) {
-      setError('복용 시각을 한 개 이상 추가해 주세요.');
-      return;
-    }
-    if (endDate && endDate < startDate) {
-      setError('종료일이 시작일보다 앞설 수 없습니다.');
-      return;
-    }
-    setError(null);
+    setErrors({});
     onSubmit({ name: trimmed, times: sortTimes(times), startDate, endDate });
   }
 
@@ -134,110 +118,111 @@ export function MedicationForm({ medication, submitLabel, onSubmit, onDelete, sa
       : parseDate(picker?.field === 'end' ? (endDate ?? startDate) : startDate);
 
   return (
-    <View style={styles.container}>
+    <View style={styles.screen}>
       <ScrollView
-        style={styles.scroll}
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
       >
-        <View style={styles.section}>
-          <Text style={styles.label}>약 이름</Text>
+        <Field label="약 이름" error={errors.name}>
           <TextInput
             value={name}
             onChangeText={(text) => {
               setName(text);
-              setError(null);
+              clearError('name');
             }}
             placeholder="예: 타이레놀"
-            placeholderTextColor={colors.muted}
-            style={styles.input}
+            placeholderTextColor={colors.textMuted}
+            style={[styles.input, errors.name && styles.inputError]}
             maxLength={NAME_MAX}
             autoFocus={!medication}
             returnKeyType="done"
+            accessibilityLabel="약 이름"
           />
-        </View>
+        </Field>
 
-        <View style={styles.section}>
-          <Text style={styles.label}>복용 시각</Text>
-          <Text style={styles.hint}>하루에 여러 번 먹는 약이면 시각을 여러 개 추가하세요.</Text>
-          {times.map((time, index) => (
-            <View key={`${time}-${index}`} style={styles.timeRow}>
-              <Pressable
-                onPress={() => openTimePicker(index)}
-                accessibilityRole="button"
-                accessibilityLabel={`${formatTime(time)} 수정`}
-                style={({ pressed }) => [styles.timeButton, pressed && styles.pressed]}
-              >
-                <Text style={styles.timeText}>{formatTime(time)}</Text>
-              </Pressable>
-              <Pressable
-                onPress={() => removeTime(index)}
-                accessibilityRole="button"
-                accessibilityLabel={`${formatTime(time)} 삭제`}
-                hitSlop={8}
-                style={({ pressed }) => [styles.removeButton, pressed && styles.pressed]}
-              >
-                <Text style={styles.removeText}>삭제</Text>
-              </Pressable>
-            </View>
-          ))}
-          <Pressable
-            onPress={() => openTimePicker('new')}
-            accessibilityRole="button"
-            style={({ pressed }) => [styles.addTime, pressed && styles.pressed]}
-          >
-            <Text style={styles.addTimeText}>+ 시각 추가</Text>
-          </Pressable>
-        </View>
+        <Field
+          label="복용 시각"
+          hint="하루에 여러 번 먹는 약이면 시각을 여러 개 추가하세요."
+          error={errors.times}
+        >
+          <View style={styles.timeList}>
+            {times.map((time, index) => (
+              <View key={`${time}-${index}`} style={styles.timeChip}>
+                <Pressable
+                  onPress={() => setPicker({ kind: 'time', index })}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${formatTime(time)} 변경`}
+                  style={({ pressed }) => [styles.timeChipMain, pressed && styles.pressed]}
+                >
+                  <Text style={styles.timeText}>{formatTime(time)}</Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => {
+                    setTimes((prev) => prev.filter((_, i) => i !== index));
+                    clearError('times');
+                  }}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${formatTime(time)} 삭제`}
+                  hitSlop={10}
+                  style={({ pressed }) => [styles.timeChipRemove, pressed && styles.pressed]}
+                >
+                  <Text style={styles.timeChipRemoveText}>✕</Text>
+                </Pressable>
+              </View>
+            ))}
+          </View>
+          <View style={styles.addTime}>
+            <AppButton
+              label="시각 추가"
+              leading="＋"
+              variant="secondary"
+              size="sm"
+              onPress={() => setPicker({ kind: 'time', index: 'new' })}
+            />
+          </View>
+        </Field>
 
-        <View style={styles.section}>
-          <Text style={styles.label}>복용 시작일</Text>
-          <Pressable
+        <Field label="복용 시작일">
+          <DateRow
+            value={formatDate(startDate)}
             onPress={() => setPicker({ kind: 'date', field: 'start' })}
-            accessibilityRole="button"
-            style={({ pressed }) => [styles.dateButton, pressed && styles.pressed]}
-          >
-            <Text style={styles.dateText}>{formatDate(startDate)}</Text>
-          </Pressable>
-        </View>
+            accessibilityLabel={`복용 시작일 ${formatDate(startDate)}, 변경하려면 누르세요`}
+          />
+        </Field>
 
-        <View style={styles.section}>
-          <View style={styles.switchRow}>
-            <View style={styles.switchLabelWrap}>
-              <Text style={styles.label}>종료일 없이 계속 복용</Text>
-              <Text style={styles.hint}>
-                {hasEndDate ? '기간이 정해진 약입니다.' : '끄면 마지막 복용일을 정할 수 있습니다.'}
-              </Text>
-            </View>
-            <Switch
-              value={!hasEndDate}
-              onValueChange={(value) => toggleEndDate(!value)}
-              trackColor={{ true: colors.primary, false: colors.border }}
-              thumbColor={colors.background}
+        <Field label="복용 기간" error={errors.endDate}>
+          <View style={styles.segmented}>
+            <SegmentButton
+              label="계속 복용"
+              selected={!hasEndDate}
+              onPress={() => setOngoing(true)}
+            />
+            <SegmentButton
+              label="기간 정하기"
+              selected={hasEndDate}
+              onPress={() => setOngoing(false)}
             />
           </View>
 
-          {hasEndDate && endDate && (
-            <View style={styles.endDateBlock}>
-              <Pressable
+          {hasEndDate && endDate ? (
+            <View style={styles.periodBlock}>
+              <DateRow
+                value={formatDate(endDate)}
+                caption="마지막 복용일"
                 onPress={() => setPicker({ kind: 'date', field: 'end' })}
-                accessibilityRole="button"
-                style={({ pressed }) => [styles.dateButton, pressed && styles.pressed]}
-              >
-                <Text style={styles.dateText}>{formatDate(endDate)}</Text>
-              </Pressable>
-              <Text style={styles.durationText}>
-                {startDate === endDate
-                  ? '오늘 하루만 복용'
-                  : `${dayCount(startDate, endDate)}일치`}
-              </Text>
+                accessibilityLabel={`복용 종료일 ${formatDate(endDate)}, 변경하려면 누르세요`}
+              />
               <View style={styles.presetRow}>
                 {DURATION_PRESETS.map((days) => {
                   const active = dayCount(startDate, endDate) === days;
                   return (
                     <Pressable
                       key={days}
-                      onPress={() => applyPreset(days)}
+                      onPress={() => {
+                        setEndDate(addDays(startDate, days - 1));
+                        clearError('endDate');
+                      }}
                       accessibilityRole="button"
                       accessibilityState={{ selected: active }}
                       style={({ pressed }) => [
@@ -253,15 +238,18 @@ export function MedicationForm({ medication, submitLabel, onSubmit, onDelete, sa
                   );
                 })}
               </View>
+              <Text style={styles.periodSummary}>
+                {startDate === endDate
+                  ? '오늘 하루만 복용합니다.'
+                  : `${dayCount(startDate, endDate)}일치입니다. 마지막 날이 지나면 알림이 저절로 멈춥니다.`}
+              </Text>
             </View>
+          ) : (
+            <Text style={styles.periodSummary}>
+              종료일 없이 계속 복용합니다. 나중에 언제든 기간을 정할 수 있습니다.
+            </Text>
           )}
-        </View>
-
-        {error && (
-          <Text style={styles.error} accessibilityLiveRegion="polite">
-            {error}
-          </Text>
-        )}
+        </Field>
 
         {onDelete && (
           <View style={styles.deleteWrap}>
@@ -286,6 +274,83 @@ export function MedicationForm({ medication, submitLabel, onSubmit, onDelete, sa
   );
 }
 
+function Field({
+  label,
+  hint,
+  error,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  error?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Card style={styles.field}>
+      <Text style={styles.fieldLabel}>{label}</Text>
+      {hint && <Text style={styles.fieldHint}>{hint}</Text>}
+      <View style={styles.fieldBody}>{children}</View>
+      {error && (
+        <Text style={styles.fieldError} accessibilityLiveRegion="polite">
+          {error}
+        </Text>
+      )}
+    </Card>
+  );
+}
+
+function DateRow({
+  value,
+  caption,
+  onPress,
+  accessibilityLabel,
+}: {
+  value: string;
+  caption?: string;
+  onPress: () => void;
+  accessibilityLabel: string;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      style={({ pressed }) => [styles.dateRow, pressed && styles.pressed]}
+    >
+      <View style={styles.dateRowText}>
+        {caption && <Text style={styles.dateCaption}>{caption}</Text>}
+        <Text style={styles.dateValue}>{value}</Text>
+      </View>
+      <Text style={styles.chevron}>›</Text>
+    </Pressable>
+  );
+}
+
+function SegmentButton({
+  label,
+  selected,
+  onPress,
+}: {
+  label: string;
+  selected: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="radio"
+      accessibilityState={{ selected }}
+      style={({ pressed }) => [
+        styles.segment,
+        selected && styles.segmentActive,
+        pressed && !selected && styles.pressed,
+      ]}
+    >
+      <Text style={[styles.segmentText, selected && styles.segmentTextActive]}>{label}</Text>
+    </Pressable>
+  );
+}
+
 /** 새 시각을 추가할 때 선택기에 띄울 초기값. 마지막 시각보다 늦게 잡아 준다. */
 function nextSuggestedTime(times: TimeString[]): TimeString {
   if (times.length === 0) return DEFAULT_TIME;
@@ -297,82 +362,117 @@ function nextSuggestedTime(times: TimeString[]): TimeString {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  scroll: { flex: 1 },
-  content: { padding: spacing.md, paddingBottom: spacing.xl },
-  section: { marginBottom: spacing.lg },
-  label: { fontSize: 17, fontWeight: '700', color: colors.text },
-  hint: { fontSize: 14, color: colors.muted, marginTop: spacing.xs },
+  screen: { flex: 1, backgroundColor: colors.bg },
+  content: { padding: spacing.lg, paddingBottom: spacing.xl, gap: spacing.md },
+
+  field: {},
+  fieldLabel: { ...type.heading, color: colors.text },
+  fieldHint: { ...type.caption, color: colors.textMuted, marginTop: spacing.xs },
+  fieldBody: { marginTop: spacing.md },
+  fieldError: { ...type.label, color: colors.danger, marginTop: spacing.md },
+
   input: {
-    marginTop: spacing.sm,
-    minHeight: 56,
+    minHeight: hitTarget + 4,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.borderStrong,
     borderRadius: radius.md,
-    paddingHorizontal: spacing.md,
-    fontSize: 18,
-    color: colors.text,
-    backgroundColor: colors.background,
-  },
-  timeRow: { flexDirection: 'row', alignItems: 'center', marginTop: spacing.sm },
-  timeButton: {
-    flex: 1,
-    minHeight: 56,
-    justifyContent: 'center',
-    paddingHorizontal: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
     backgroundColor: colors.surface,
+    ...type.body,
+    color: colors.text,
   },
-  timeText: { fontSize: 20, fontWeight: '600', color: colors.text },
-  removeButton: { paddingHorizontal: spacing.md, paddingVertical: spacing.sm, marginLeft: spacing.xs },
-  removeText: { fontSize: 15, color: colors.danger, fontWeight: '600' },
-  addTime: {
-    marginTop: spacing.sm,
-    minHeight: 52,
+  inputError: { borderColor: colors.danger },
+
+  timeList: { gap: spacing.sm },
+  timeChip: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    backgroundColor: colors.surfaceAlt,
+    overflow: 'hidden',
+  },
+  timeChipMain: {
+    flex: 1,
+    minHeight: hitTarget,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+  },
+  timeText: { ...type.bodyStrong, color: colors.text },
+  timeChipRemove: {
+    width: hitTarget,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderStyle: 'dashed',
-    borderColor: colors.primary,
-    borderRadius: radius.md,
+    borderLeftWidth: 1,
+    borderLeftColor: colors.border,
   },
-  addTimeText: { fontSize: 16, fontWeight: '700', color: colors.primary },
-  dateButton: {
-    marginTop: spacing.sm,
-    minHeight: 56,
+  timeChipRemoveText: { ...type.body, color: colors.textMuted },
+  addTime: { marginTop: spacing.md, alignItems: 'flex-start' },
+
+  dateRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    minHeight: hitTarget + 4,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    backgroundColor: colors.surfaceAlt,
+  },
+  dateRowText: { flex: 1 },
+  dateCaption: { ...type.caption, color: colors.textMuted, marginBottom: 2 },
+  dateValue: { ...type.bodyStrong, color: colors.text },
+  chevron: { ...type.title, color: colors.textMuted, marginLeft: spacing.sm },
+
+  segmented: {
+    flexDirection: 'row',
+    backgroundColor: colors.surfaceAlt,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: 3,
+    gap: 3,
+  },
+  segment: {
+    flex: 1,
+    minHeight: hitTarget - 6,
+    alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    backgroundColor: colors.surface,
-  },
-  dateText: { fontSize: 18, fontWeight: '600', color: colors.text },
-  switchRow: { flexDirection: 'row', alignItems: 'center' },
-  switchLabelWrap: { flex: 1, paddingRight: spacing.md },
-  endDateBlock: { marginTop: spacing.sm },
-  durationText: { marginTop: spacing.sm, fontSize: 15, fontWeight: '600', color: colors.primary },
-  presetRow: { flexDirection: 'row', flexWrap: 'wrap', marginTop: spacing.sm, gap: spacing.sm },
-  preset: {
-    paddingHorizontal: spacing.md,
+    borderRadius: radius.sm,
     paddingVertical: spacing.sm,
-    borderRadius: radius.lg,
+    paddingHorizontal: spacing.sm,
+  },
+  segmentActive: { backgroundColor: colors.surface },
+  segmentText: { ...type.label, color: colors.textSecondary, textAlign: 'center' },
+  segmentTextActive: { color: colors.brand },
+
+  periodBlock: { marginTop: spacing.md, gap: spacing.md },
+  presetRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  preset: {
+    minHeight: 40,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.lg,
+    borderRadius: radius.pill,
     borderWidth: 1,
     borderColor: colors.border,
     backgroundColor: colors.surface,
   },
-  presetActive: { backgroundColor: colors.primary, borderColor: colors.primary },
-  presetText: { fontSize: 15, fontWeight: '600', color: colors.text },
-  presetTextActive: { color: colors.primaryText },
-  error: { fontSize: 15, color: colors.danger, fontWeight: '600', marginBottom: spacing.md },
+  presetActive: { backgroundColor: colors.brand, borderColor: colors.brand },
+  presetText: { ...type.label, color: colors.textSecondary },
+  presetTextActive: { color: colors.onBrand },
+  periodSummary: { ...type.caption, color: colors.textMuted, marginTop: spacing.md },
+
   deleteWrap: { marginTop: spacing.sm },
   pressed: { opacity: 0.7 },
+
   footer: {
-    padding: spacing.md,
+    padding: spacing.lg,
     borderTopWidth: 1,
     borderTopColor: colors.border,
-    backgroundColor: colors.background,
+    backgroundColor: colors.surface,
   },
 });

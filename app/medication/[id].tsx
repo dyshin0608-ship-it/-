@@ -6,7 +6,7 @@ import { MedicationForm } from '../../src/components/MedicationForm';
 import { syncSchedule } from '../../src/lib/notifications';
 import { deleteMedication, getMedication, updateMedication } from '../../src/lib/storage';
 import type { Medication, MedicationInput } from '../../src/lib/types';
-import { colors, spacing } from '../../src/theme';
+import { colors, spacing, type } from '../../src/theme';
 
 export default function EditMedicationScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -56,7 +56,7 @@ export default function EditMedicationScreen() {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator color={colors.primary} />
+        <ActivityIndicator color={colors.brand} />
       </View>
     );
   }
@@ -81,6 +81,12 @@ export default function EditMedicationScreen() {
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.lg },
-  missing: { fontSize: 17, color: colors.muted },
+  center: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing.xl,
+    backgroundColor: colors.bg,
+  },
+  missing: { ...type.body, color: colors.textMuted },
 });
