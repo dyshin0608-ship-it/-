@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, StyleSheet, Text, View } from 'react-native';
 
 import { MedicationForm } from '../../src/components/MedicationForm';
+import { syncSchedule } from '../../src/lib/notifications';
 import { deleteMedication, getMedication, updateMedication } from '../../src/lib/storage';
 import type { Medication, MedicationInput } from '../../src/lib/types';
 import { colors, spacing } from '../../src/theme';
@@ -29,6 +30,7 @@ export default function EditMedicationScreen() {
     setSaving(true);
     try {
       await updateMedication(id, input);
+      await syncSchedule();
       router.back();
     } catch {
       setSaving(false);
@@ -44,6 +46,7 @@ export default function EditMedicationScreen() {
         style: 'destructive',
         onPress: async () => {
           await deleteMedication(id);
+          await syncSchedule();
           router.back();
         },
       },

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Alert } from 'react-native';
 
 import { MedicationForm } from '../../src/components/MedicationForm';
+import { syncSchedule } from '../../src/lib/notifications';
 import { addMedication } from '../../src/lib/storage';
 import type { MedicationInput } from '../../src/lib/types';
 
@@ -13,6 +14,7 @@ export default function NewMedicationScreen() {
     setSaving(true);
     try {
       await addMedication(input);
+      await syncSchedule();
       router.back();
     } catch {
       setSaving(false);

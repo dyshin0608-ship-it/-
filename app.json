@@ -1,25 +1,35 @@
 {
   "expo": {
-    "name": "medi",
-    "slug": "medi",
+    "name": "또박",
+    "slug": "ttobak",
     "version": "1.0.0",
     "orientation": "portrait",
-    "scheme": "medi",
+    "scheme": "ttobak",
     "userInterfaceStyle": "light",
     "icon": "./assets/icon.png",
     "android": {
-      "package": "com.medi.app",
+      "package": "com.ttobak.app",
+      "permissions": [
+        "android.permission.SCHEDULE_EXACT_ALARM"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       }
     },
     "ios": {
-      "bundleIdentifier": "com.medi.app",
+      "bundleIdentifier": "com.ttobak.app",
       "supportsTablet": true
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#1565D8"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

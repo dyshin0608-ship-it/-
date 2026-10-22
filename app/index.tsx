@@ -3,8 +3,10 @@ import { useCallback, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { AlarmStatusCard } from '../src/components/AlarmStatusCard';
 import { AppButton } from '../src/components/AppButton';
 import { dayCount, formatDate, formatDateShort, formatTime, today } from '../src/lib/date';
+import { useAlarmStatus } from '../src/hooks/useAlarmStatus';
 import { getMedications } from '../src/lib/storage';
 import type { Medication } from '../src/lib/types';
 import { colors, radius, spacing } from '../src/theme';
@@ -12,6 +14,7 @@ import { colors, radius, spacing } from '../src/theme';
 export default function MedicationListScreen() {
   const [medications, setMedications] = useState<Medication[] | null>(null);
   const insets = useSafeAreaInsets();
+  const alarm = useAlarmStatus();
 
   // 등록/수정 화면에서 돌아올 때마다 다시 읽는다.
   useFocusEffect(
@@ -31,12 +34,22 @@ export default function MedicationListScreen() {
   return (
     <View style={styles.container}>
       {isEmpty ? (
-        <View style={styles.empty}>
-          <Text style={styles.emptyTitle}>등록된 약이 없습니다</Text>
-          <Text style={styles.emptyBody}>
-            약을 등록하면 정해진 시각에 알림이 울립니다.{'\n'}
-            알림은 기기에 직접 예약되므로 인터넷이 끊겨도 옵니다.
-          </Text>
+        <View style={styles.emptyWrap}>
+          <View style={styles.emptyCardSlot}>
+            <AlarmStatusCard
+              permissions={alarm.permissions}
+              schedule={alarm.schedule}
+              onFixNotifications={alarm.fixNotifications}
+              onFixExactAlarms={alarm.fixExactAlarms}
+            />
+          </View>
+          <View style={styles.empty}>
+            <Text style={styles.emptyTitle}>등록된 약이 없습니다</Text>
+            <Text style={styles.emptyBody}>
+              약을 등록하면 정해진 시각에 알림이 울립니다.{'\n'}
+              알림은 기기에 직접 예약되므로 인터넷이 끊겨도 옵니다.
+            </Text>
+          </View>
         </View>
       ) : (
         <FlatList
@@ -45,7 +58,12 @@ export default function MedicationListScreen() {
           contentContainerStyle={styles.list}
           renderItem={({ item }) => <MedicationRow medication={item} />}
           ListHeaderComponent={
-            <Text style={styles.promise}>알림은 기기에 직접 예약됩니다 · 광고 없음</Text>
+            <AlarmStatusCard
+              permissions={alarm.permissions}
+              schedule={alarm.schedule}
+              onFixNotifications={alarm.fixNotifications}
+              onFixExactAlarms={alarm.fixExactAlarms}
+            />
           }
         />
       )}
@@ -105,7 +123,8 @@ function periodStatus(medication: Medication): { period: string; badge: string |
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   list: { padding: spacing.md },
-  promise: { fontSize: 13, color: colors.muted, marginBottom: spacing.md },
+  emptyWrap: { flex: 1 },
+  emptyCardSlot: { paddingHorizontal: spacing.md, paddingTop: spacing.md },
   row: {
     borderWidth: 1,
     borderColor: colors.border,

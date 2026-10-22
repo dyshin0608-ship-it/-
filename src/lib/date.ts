@@ -70,3 +70,11 @@ export function formatDateShort(value: DateString): string {
   const thisYear = new Date().getFullYear();
   return y === thisYear ? `${m}월 ${d}일` : `${y}년 ${m}월 ${d}일`;
 }
+
+/** 알림이 언제 오는지 보여줄 때 쓴다. "오늘" / "내일" / "10월 24일" */
+export function formatRelativeDay(value: DateString): string {
+  const now = today();
+  if (value === now) return '오늘';
+  if (value === addDays(now, 1)) return '내일';
+  return formatDateShort(value);
+}

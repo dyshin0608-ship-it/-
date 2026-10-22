@@ -1,5 +1,5 @@
 {
-  "name": "medi",
+  "name": "ttobak",
   "version": "1.0.0",
   "main": "expo-router/entry",
   "private": true,
@@ -14,6 +14,7 @@
     "expo": "~58.0.17",
     "expo-constants": "~58.0.13",
     "expo-linking": "~58.0.14",
+    "expo-notifications": "~58.1.6",
     "expo-router": "~58.0.25",
     "expo-status-bar": "~58.0.4",
     "react": "19.3.0",
