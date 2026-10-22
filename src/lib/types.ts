@@ -15,6 +15,11 @@ export type Medication = {
   /** 복용 종료일. null이면 종료일 없이 계속 복용. */
   endDate: DateString | null;
   createdAt: string;
+  /**
+   * 식약처 품목기준코드. 약 정보 화면으로 연결하는 데만 쓴다.
+   * 선택 사항이라 이 필드가 없던 시절에 저장한 기록도 그대로 읽힌다.
+   */
+  drugSeq?: string;
 };
 
 /** 약을 새로 만들거나 수정할 때 폼이 돌려주는 값. */
@@ -23,4 +28,5 @@ export type MedicationInput = {
   times: TimeString[];
   startDate: DateString;
   endDate: DateString | null;
+  drugSeq?: string;
 };

@@ -56,6 +56,7 @@ export async function addMedication(input: MedicationInput): Promise<Medication>
     times: sortTimes(input.times),
     startDate: input.startDate,
     endDate: input.endDate,
+    drugSeq: input.drugSeq,
     createdAt: new Date().toISOString(),
   };
   const all = await getMedications();
@@ -74,6 +75,7 @@ export async function updateMedication(id: string, input: MedicationInput): Prom
             times: sortTimes(input.times),
             startDate: input.startDate,
             endDate: input.endDate,
+            drugSeq: input.drugSeq,
           }
         : m,
     ),

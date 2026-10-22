@@ -1,4 +1,4 @@
-import Svg, { Circle, Line, Path, Rect } from 'react-native-svg';
+import Svg, { Circle, G, Line, Path, Rect } from 'react-native-svg';
 
 import { colors, iconSize } from '../theme';
 
@@ -115,19 +115,14 @@ export function Icon({ name, size = 'md', color = colors.text }: Props) {
       )}
       {name === 'pill' && (
         <>
-          {/* 또박 마크와 같은 모양: 비스듬한 캡슐 + 오른쪽 아래 시계 */}
-          <Rect
-            x="2.5"
-            y="6.5"
-            width="11"
-            height="19"
-            rx="5.5"
-            transform="rotate(-40 8 11)"
-            {...stroke}
-          />
-          <Line x1="4.2" y1="11.4" x2="11.8" y2="4.8" {...stroke} />
+          {/* 또박 마크와 같은 모양: 비스듬한 캡슐 + 오른쪽 아래 시계.
+              모든 좌표가 0~24 안에 들어가야 잘리지 않는다. */}
+          <G transform="rotate(-45 9 9)">
+            <Rect x="5" y="2" width="8" height="14" rx="4" {...stroke} />
+            <Line x1="5" y1="9" x2="13" y2="9" {...stroke} />
+          </G>
           <Circle cx="16.5" cy="16.5" r="5.5" {...stroke} fill={colors.bg} />
-          <Path d="M16.5 13.5v3h2.2" {...stroke} />
+          <Path d="M16.5 13.6V16.5h2.3" {...stroke} />
         </>
       )}
     </Svg>

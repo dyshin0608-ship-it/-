@@ -47,6 +47,7 @@ export default function RootLayout() {
         <Stack.Screen name="alarms" options={{ title: '예약된 알림' }} />
         <Stack.Screen name="medication/new" options={{ title: '약 등록' }} />
         <Stack.Screen name="medication/[id]" options={{ title: '약 수정' }} />
+        <Stack.Screen name="drug/[seq]" options={{ title: '약 정보' }} />
       </Stack>
     </>
   );

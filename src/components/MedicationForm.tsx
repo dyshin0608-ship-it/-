@@ -1,5 +1,6 @@
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { useState } from 'react';
+import { router } from 'expo-router';
+import { useMemo, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -24,6 +25,7 @@ import {
   today,
   toTimeString,
 } from '../lib/date';
+import { searchDrugs } from '../lib/drugs';
 import type { DateString, Medication, MedicationInput, TimeString } from '../lib/types';
 import { colors, gutter, hitTarget, radius, spacing, type } from '../theme';
 import { Icon } from './Icon';
@@ -59,9 +61,16 @@ export function MedicationForm({ medication, submitLabel, onSubmit, onDelete, sa
   const [endDate, setEndDate] = useState<DateString | null>(medication?.endDate ?? null);
   const [picker, setPicker] = useState<PickerTarget | null>(null);
   const [errors, setErrors] = useState<Errors>({});
+  // 식약처 자료에서 고른 약. 고르지 않아도 등록은 된다.
+  const [drugSeq, setDrugSeq] = useState<string | undefined>(medication?.drugSeq);
   const insets = useSafeAreaInsets();
 
   const hasEndDate = endDate !== null;
+  // 이름을 직접 치는 중에만 후보를 띄운다. 이미 골랐으면 띄우지 않는다.
+  const suggestions = useMemo(
+    () => (drugSeq ? [] : searchDrugs(name)),
+    [name, drugSeq],
+  );
 
   function clearError(field: keyof Errors) {
     setErrors((prev) => (prev[field] ? { ...prev, [field]: undefined } : prev));
@@ -121,7 +130,7 @@ export function MedicationForm({ medication, submitLabel, onSubmit, onDelete, sa
       return;
     }
     setErrors({});
-    onSubmit({ name: trimmed, times: sortTimes(times), startDate, endDate });
+    onSubmit({ name: trimmed, times: sortTimes(times), startDate, endDate, drugSeq });
   }
 
   const pickerValue =
@@ -139,19 +148,63 @@ export function MedicationForm({ medication, submitLabel, onSubmit, onDelete, sa
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
       >
-        <TextField
-          label="약 이름"
-          value={name}
-          onChangeText={(text) => {
-            setName(text);
-            clearError('name');
-          }}
-          placeholder="예: 타이레놀"
-          maxLength={NAME_MAX}
-          autoFocus={!medication}
-          returnKeyType="done"
-          error={errors.name}
-        />
+        <View>
+          <TextField
+            label="약 이름"
+            value={name}
+            onChangeText={(text) => {
+              setName(text);
+              // 이름을 고쳐 쓰면 골라 둔 약과 어긋나므로 연결을 끊는다.
+              setDrugSeq(undefined);
+              clearError('name');
+            }}
+            placeholder="예: 타이레놀"
+            maxLength={NAME_MAX}
+            autoFocus={!medication}
+            returnKeyType="done"
+            error={errors.name}
+          />
+
+          {suggestions.length > 0 && (
+            <View style={styles.suggestions}>
+              <Text style={styles.suggestHint}>식약처 자료에서 찾았어요</Text>
+              {suggestions.map((drug, index) => (
+                <Row
+                  key={drug.seq}
+                  first={index === 0}
+                  showChevron
+                  onPress={() => {
+                    setName(drug.name);
+                    setDrugSeq(drug.seq);
+                    clearError('name');
+                  }}
+                  accessibilityLabel={`${drug.name} 선택`}
+                >
+                  <Text style={styles.suggestName} numberOfLines={1}>
+                    {drug.name}
+                  </Text>
+                  <Text style={styles.suggestMaker} numberOfLines={1}>
+                    {drug.maker}
+                  </Text>
+                </Row>
+              ))}
+            </View>
+          )}
+
+          {drugSeq && (
+            <View style={styles.linked}>
+              <Row
+                first
+                showChevron
+                onPress={() => router.push({ pathname: '/drug/[seq]', params: { seq: drugSeq } })}
+                accessibilityLabel="이 약의 정보 보기"
+                leading={<Icon name="help" size="md" color={colors.brand} />}
+              >
+                <Text style={styles.linkedText}>이 약은 어떨 때 먹나요?</Text>
+              </Row>
+            </View>
+          )}
+        </View>
 
         <Section title="복용 시각">
           <View>
@@ -319,6 +372,18 @@ function nextSuggestedTime(times: TimeString[]): TimeString {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
   content: { padding: gutter, paddingBottom: spacing.xxl, gap: spacing.xl },
+
+  suggestions: {
+    marginTop: spacing.md,
+    paddingHorizontal: spacing.lg,
+    borderRadius: radius.md,
+    backgroundColor: colors.bgAlt,
+  },
+  suggestHint: { ...type.caption, color: colors.textSecondary, paddingTop: spacing.md },
+  suggestName: { ...type.bodyStrong, color: colors.text },
+  suggestMaker: { ...type.caption, color: colors.textSecondary, marginTop: 2 },
+  linked: { marginTop: spacing.sm },
+  linkedText: { ...type.bodyStrong, color: colors.brand },
 
   timeText: { ...type.bodyStrong, color: colors.text },
   remove: {
