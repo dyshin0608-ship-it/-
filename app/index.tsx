@@ -41,6 +41,7 @@ export default function MedicationListScreen() {
               schedule={alarm.schedule}
               onFixNotifications={alarm.fixNotifications}
               onFixExactAlarms={alarm.fixExactAlarms}
+              onOpenDiagnostics={() => router.push('/alarms')}
             />
           </View>
           <View style={styles.empty}>
@@ -63,6 +64,7 @@ export default function MedicationListScreen() {
               schedule={alarm.schedule}
               onFixNotifications={alarm.fixNotifications}
               onFixExactAlarms={alarm.fixExactAlarms}
+              onOpenDiagnostics={() => router.push('/alarms')}
             />
           }
         />

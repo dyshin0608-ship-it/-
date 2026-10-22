@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { alarmStatusKind } from '../lib/alarmStatus';
 import { formatRelativeDay, formatTime } from '../lib/date';
 import type { PermissionState, ScheduleSummary } from '../lib/notifications';
 import { colors, radius, spacing } from '../theme';
@@ -9,6 +10,7 @@ type Props = {
   schedule: ScheduleSummary;
   onFixNotifications: () => void;
   onFixExactAlarms: () => void;
+  onOpenDiagnostics: () => void;
 };
 
 /**
@@ -20,10 +22,13 @@ export function AlarmStatusCard({
   schedule,
   onFixNotifications,
   onFixExactAlarms,
+  onOpenDiagnostics,
 }: Props) {
-  if (!permissions) return null;
+  const kind = alarmStatusKind(permissions, schedule.count);
 
-  if (!permissions.canNotify) {
+  if (kind === 'unknown' || kind === 'nothing-scheduled') return null;
+
+  if (kind === 'notifications-off') {
     return (
       <Card tone="error">
         <Text style={styles.titleError}>알림이 꺼져 있습니다</Text>
@@ -35,7 +40,7 @@ export function AlarmStatusCard({
     );
   }
 
-  if (!permissions.exactAlarms) {
+  if (kind === 'exact-alarms-off') {
     return (
       <Card tone="warning">
         <Text style={styles.titleWarning}>알림이 늦게 올 수 있습니다</Text>
@@ -48,8 +53,6 @@ export function AlarmStatusCard({
     );
   }
 
-  if (schedule.count === 0) return null;
-
   return (
     <Card tone="ok">
       <Text style={styles.titleOk}>알림 {schedule.count}개가 예약되어 있습니다</Text>
@@ -59,9 +62,15 @@ export function AlarmStatusCard({
           {schedule.next.medicationName}
         </Text>
       )}
-      <Text style={styles.footnote}>
-        알림은 기기에 직접 예약됩니다. 인터넷이 끊겨도 울립니다.
-      </Text>
+      <Text style={styles.footnote}>알림은 기기에 직접 예약됩니다. 인터넷이 끊겨도 울립니다.</Text>
+      <Pressable
+        onPress={onOpenDiagnostics}
+        accessibilityRole="button"
+        hitSlop={8}
+        style={({ pressed }) => pressed && styles.pressed}
+      >
+        <Text style={styles.link}>예약된 알림 확인 →</Text>
+      </Pressable>
     </Card>
   );
 }
@@ -112,6 +121,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   fixLabel: { fontSize: 16, fontWeight: '700', color: colors.primaryText },
+  link: { marginTop: spacing.sm, fontSize: 14, fontWeight: '700', color: colors.primary },
   pressed: { opacity: 0.75 },
 });
 

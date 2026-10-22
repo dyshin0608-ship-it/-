@@ -88,3 +88,43 @@ export function buildOccurrences(
   occurrences.sort((a, b) => a.at.getTime() - b.at.getTime());
   return occurrences.slice(0, options.max);
 }
+
+export type ScheduleDiff = {
+  /** 취소해야 할 알림 식별자. */
+  toCancel: string[];
+  /** 새로 걸어야 할 알림. */
+  toSchedule: DoseOccurrence[];
+  /** 이미 제대로 걸려 있어서 손대지 않는 알림 식별자. */
+  unchanged: string[];
+};
+
+/**
+ * 기기에 걸려 있는 알림과 걸려 있어야 할 알림을 비교한다.
+ *
+ * 이 앱이 걸지 않은 알림(식별자 앞에 dose: 가 없는 것)은 결과에 넣지 않는다.
+ * 남의 알림을 지우지 않기 위해서다.
+ */
+export function diffSchedule(existingIds: string[], desired: DoseOccurrence[]): ScheduleDiff {
+  const desiredIds = new Set(desired.map((occurrence) => occurrence.id));
+  const existing = new Set(existingIds.filter(isDoseNotificationId));
+
+  return {
+    toCancel: [...existing].filter((id) => !desiredIds.has(id)),
+    toSchedule: desired.filter((occurrence) => !existing.has(occurrence.id)),
+    unchanged: desired.filter((occurrence) => existing.has(occurrence.id)).map(({ id }) => id),
+  };
+}
+
+/** 알림 식별자를 되돌려 읽는다. 기기에 실제로 걸려 있는 알림을 확인할 때 쓴다. */
+export function parseDoseNotificationId(
+  identifier: string,
+): { medicationId: string; date: DateString; time: TimeString } | null {
+  const parts = identifier.split(':');
+  // dose : 약id : YYYY-MM-DD : HH : MM
+  if (parts.length !== 5 || parts[0] !== DOSE_ID_PREFIX) return null;
+  const [, medicationId, date, hour, minute] = parts;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}$/.test(hour) || !/^\d{2}$/.test(minute)) {
+    return null;
+  }
+  return { medicationId, date, time: `${hour}:${minute}` };
+}

@@ -2,7 +2,13 @@ import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
 import { formatTime } from './date';
-import { buildOccurrences, isDoseNotificationId, type DoseOccurrence } from './schedule';
+import type { DateString, TimeString } from './types';
+import {
+  buildOccurrences,
+  diffSchedule,
+  parseDoseNotificationId,
+  type DoseOccurrence,
+} from './schedule';
 import { getMedications } from './storage';
 
 export const DOSE_CHANNEL_ID = 'dose-reminders';
@@ -138,21 +144,17 @@ async function runSync(): Promise<ScheduleSummary> {
     windowDays: WINDOW_DAYS,
     max: MAX_SCHEDULED,
   });
-  const desiredById = new Map(desired.map((occurrence) => [occurrence.id, occurrence]));
 
   const existing = await Notifications.getAllScheduledNotificationsAsync();
-  const alreadyScheduled = new Set<string>();
-  for (const request of existing) {
-    if (!isDoseNotificationId(request.identifier)) continue; // 이 앱이 건 알림만 손 댄다
-    if (desiredById.has(request.identifier)) {
-      alreadyScheduled.add(request.identifier);
-    } else {
-      await Notifications.cancelScheduledNotificationAsync(request.identifier);
-    }
-  }
+  const diff = diffSchedule(
+    existing.map((request) => request.identifier),
+    desired,
+  );
 
-  const toSchedule = desired.filter((occurrence) => !alreadyScheduled.has(occurrence.id));
-  for (const occurrence of toSchedule) {
+  for (const identifier of diff.toCancel) {
+    await Notifications.cancelScheduledNotificationAsync(identifier);
+  }
+  for (const occurrence of diff.toSchedule) {
     await scheduleDose(occurrence);
   }
 
@@ -183,4 +185,65 @@ async function scheduleDose(occurrence: DoseOccurrence): Promise<void> {
       delivery: 'alarmClock',
     },
   });
+}
+
+/** 기기에 실제로 걸려 있는 복용 알림. 예약 상태를 눈으로 확인할 때 쓴다. */
+export type ScheduledDose = {
+  id: string;
+  title: string;
+  date: DateString;
+  time: TimeString;
+  /** 안드로이드가 알려주는 실제 발동 시각. 식별자와 어긋나면 그게 버그다. */
+  firesAt: Date | null;
+};
+
+export async function readScheduledDoses(): Promise<ScheduledDose[]> {
+  const requests = await Notifications.getAllScheduledNotificationsAsync();
+  const doses: ScheduledDose[] = [];
+
+  for (const request of requests) {
+    const parsed = parseDoseNotificationId(request.identifier);
+    if (!parsed) continue;
+    doses.push({
+      id: request.identifier,
+      title: typeof request.content.title === 'string' ? request.content.title : '',
+      date: parsed.date,
+      time: parsed.time,
+      firesAt: triggerDate(request.trigger),
+    });
+  }
+
+  doses.sort((a, b) => `${a.date} ${a.time}`.localeCompare(`${b.date} ${b.time}`));
+  return doses;
+}
+
+/** 안드로이드가 돌려주는 트리거에서 발동 시각을 꺼낸다. */
+function triggerDate(trigger: Notifications.NotificationTrigger): Date | null {
+  if (trigger && typeof trigger === 'object' && 'value' in trigger) {
+    const value = (trigger as { value: unknown }).value;
+    if (typeof value === 'number') return new Date(value);
+  }
+  return null;
+}
+
+/** 테스트용. 지금 쓰는 채널·전달 방식 그대로 잠시 뒤에 울려 본다. */
+export async function sendTestNotification(afterSeconds: number): Promise<Date> {
+  await ensureNotificationChannel();
+  const at = new Date(Date.now() + afterSeconds * 1000);
+  await Notifications.scheduleNotificationAsync({
+    identifier: `test:${at.getTime()}`,
+    content: {
+      title: '테스트 알림',
+      body: '이 알림이 제시간에 왔다면 알림 설정이 정상입니다.',
+      sound: 'default',
+      priority: Notifications.AndroidNotificationPriority.MAX,
+    },
+    trigger: {
+      type: Notifications.SchedulableTriggerInputTypes.DATE,
+      date: at,
+      channelId: DOSE_CHANNEL_ID,
+      delivery: 'alarmClock',
+    },
+  });
+  return at;
 }
