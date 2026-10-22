@@ -11,7 +11,14 @@ import {
 } from './schedule';
 import { getMedications } from './storage';
 
-export const DOSE_CHANNEL_ID = 'dose-reminders';
+/**
+ * 알림 채널.
+ *
+ * 안드로이드는 채널을 한 번 만들면 소리·중요도를 코드로 바꿀 수 없다.
+ * 그래서 알람 소리로 바꿀 때 채널 이름을 새로 만들었다. 예전 채널
+ * (dose-reminders)은 일반 알림 소리로 굳어 있어 손댈 수 없다.
+ */
+export const DOSE_CHANNEL_ID = 'dose-alarms-v2';
 
 /**
  * 며칠 앞까지 미리 예약해 둘지, 그리고 한 번에 몇 개까지 예약할지.
@@ -43,10 +50,17 @@ export function configureNotificationHandler(): void {
 export async function ensureNotificationChannel(): Promise<void> {
   if (Platform.OS !== 'android') return;
   await Notifications.setNotificationChannelAsync(DOSE_CHANNEL_ID, {
-    name: '복약 알림',
+    name: '복약 알람',
     importance: Notifications.AndroidImportance.MAX,
-    sound: 'default',
-    vibrationPattern: [0, 400, 200, 400],
+    // 알람 소리로 울린다. 폰이 무음·진동이어도 알람은 음소거되지 않는다.
+    // 복용 시각을 놓치지 않는 것이 이 앱의 전부라 알림음이 아니라 알람음을 쓴다.
+    audioAttributes: {
+      usage: Notifications.AndroidAudioUsage.ALARM,
+      contentType: Notifications.AndroidAudioContentType.SONIFICATION,
+      flags: { enforceAudibility: true, requestHardwareAudioVideoSynchronization: false },
+    },
+    sound: 'alarm.wav',
+    vibrationPattern: [0, 500, 300, 500, 300, 500],
     enableVibrate: true,
     lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
     showBadge: false,
@@ -167,7 +181,7 @@ async function scheduleDose(occurrence: DoseOccurrence): Promise<void> {
     content: {
       title: occurrence.medicationName,
       body: `${formatTime(occurrence.time)} · 복용 시간입니다`,
-      sound: 'default',
+      sound: 'alarm.wav',
       priority: Notifications.AndroidNotificationPriority.MAX,
       data: {
         type: 'dose',
@@ -235,7 +249,7 @@ export async function sendTestNotification(afterSeconds: number): Promise<Date> 
     content: {
       title: '테스트 알림',
       body: '이 알림이 제시간에 왔다면 알림 설정이 정상입니다.',
-      sound: 'default',
+      sound: 'alarm.wav',
       priority: Notifications.AndroidNotificationPriority.MAX,
     },
     trigger: {
