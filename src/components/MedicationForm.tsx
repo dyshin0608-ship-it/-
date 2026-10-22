@@ -1,6 +1,15 @@
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
   addDays,
@@ -16,9 +25,9 @@ import {
   toTimeString,
 } from '../lib/date';
 import type { DateString, Medication, MedicationInput, TimeString } from '../lib/types';
-import { colors, hitTarget, radius, spacing, type } from '../theme';
-import { AppButton } from './AppButton';
-import { Card } from './Card';
+import { colors, gutter, hitTarget, radius, spacing, type } from '../theme';
+import { Icon } from './Icon';
+import { Button, FieldError, Row, Section, TextField } from './ui';
 
 /** 감기약처럼 기간이 정해진 약을 빨리 넣을 수 있게 하는 단축 버튼. */
 const DURATION_PRESETS = [3, 5, 7, 14] as const;
@@ -50,6 +59,7 @@ export function MedicationForm({ medication, submitLabel, onSubmit, onDelete, sa
   const [endDate, setEndDate] = useState<DateString | null>(medication?.endDate ?? null);
   const [picker, setPicker] = useState<PickerTarget | null>(null);
   const [errors, setErrors] = useState<Errors>({});
+  const insets = useSafeAreaInsets();
 
   const hasEndDate = endDate !== null;
 
@@ -98,6 +108,8 @@ export function MedicationForm({ medication, submitLabel, onSubmit, onDelete, sa
   }
 
   function handleSubmit() {
+    if (saving) return; // 중복 제출 방지
+
     const trimmed = name.trim();
     const next: Errors = {};
     if (!trimmed) next.name = '약 이름을 입력해 주세요.';
@@ -118,101 +130,97 @@ export function MedicationForm({ medication, submitLabel, onSubmit, onDelete, sa
       : parseDate(picker?.field === 'end' ? (endDate ?? startDate) : startDate);
 
   return (
-    <View style={styles.screen}>
+    <KeyboardAvoidingView
+      style={styles.screen}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
       <ScrollView
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
       >
-        <Field label="약 이름" error={errors.name}>
-          <TextInput
-            value={name}
-            onChangeText={(text) => {
-              setName(text);
-              clearError('name');
-            }}
-            placeholder="예: 타이레놀"
-            placeholderTextColor={colors.textMuted}
-            style={[styles.input, errors.name && styles.inputError]}
-            maxLength={NAME_MAX}
-            autoFocus={!medication}
-            returnKeyType="done"
-            accessibilityLabel="약 이름"
-          />
-        </Field>
+        <TextField
+          label="약 이름"
+          value={name}
+          onChangeText={(text) => {
+            setName(text);
+            clearError('name');
+          }}
+          placeholder="예: 타이레놀"
+          maxLength={NAME_MAX}
+          autoFocus={!medication}
+          returnKeyType="done"
+          error={errors.name}
+        />
 
-        <Field
-          label="복용 시각"
-          hint="하루에 여러 번 먹는 약이면 시각을 여러 개 추가하세요."
-          error={errors.times}
-        >
-          <View style={styles.timeList}>
+        <Section title="복용 시각">
+          <View>
             {times.map((time, index) => (
-              <View key={`${time}-${index}`} style={styles.timeChip}>
-                <Pressable
-                  onPress={() => setPicker({ kind: 'time', index })}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${formatTime(time)} 변경`}
-                  style={({ pressed }) => [styles.timeChipMain, pressed && styles.pressed]}
-                >
-                  <Text style={styles.timeText}>{formatTime(time)}</Text>
-                </Pressable>
-                <Pressable
-                  onPress={() => {
-                    setTimes((prev) => prev.filter((_, i) => i !== index));
-                    clearError('times');
-                  }}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${formatTime(time)} 삭제`}
-                  hitSlop={10}
-                  style={({ pressed }) => [styles.timeChipRemove, pressed && styles.pressed]}
-                >
-                  <Text style={styles.timeChipRemoveText}>✕</Text>
-                </Pressable>
-              </View>
+              <Row
+                key={`${time}-${index}`}
+                first={index === 0}
+                leading={<Icon name="clock" size="md" color={colors.textSecondary} />}
+                onPress={() => setPicker({ kind: 'time', index })}
+                accessibilityLabel={`${formatTime(time)} 변경`}
+                trailing={
+                  <Pressable
+                    onPress={() => {
+                      setTimes((prev) => prev.filter((_, i) => i !== index));
+                      clearError('times');
+                    }}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${formatTime(time)} 삭제`}
+                    hitSlop={10}
+                    style={({ pressed }) => [styles.remove, pressed && styles.pressed]}
+                  >
+                    <Icon name="close" size="md" color={colors.textSecondary} />
+                  </Pressable>
+                }
+              >
+                <Text style={styles.timeText}>{formatTime(time)}</Text>
+              </Row>
             ))}
           </View>
-          <View style={styles.addTime}>
-            <AppButton
-              label="시각 추가"
-              leading="＋"
-              variant="secondary"
-              size="sm"
-              onPress={() => setPicker({ kind: 'time', index: 'new' })}
-            />
-          </View>
-        </Field>
+          <Button
+            label="시각 추가"
+            icon="plus"
+            variant="quiet"
+            fullWidth={false}
+            onPress={() => setPicker({ kind: 'time', index: 'new' })}
+          />
+          {errors.times && <FieldError message={errors.times} />}
+        </Section>
 
-        <Field label="복용 시작일">
-          <DateRow
-            value={formatDate(startDate)}
+        <Section title="복용 시작일">
+          <Row
+            first
+            leading={<Icon name="calendar" size="md" color={colors.textSecondary} />}
+            showChevron
             onPress={() => setPicker({ kind: 'date', field: 'start' })}
             accessibilityLabel={`복용 시작일 ${formatDate(startDate)}, 변경하려면 누르세요`}
-          />
-        </Field>
+          >
+            <Text style={styles.dateText}>{formatDate(startDate)}</Text>
+          </Row>
+        </Section>
 
-        <Field label="복용 기간" error={errors.endDate}>
+        <Section title="복용 기간">
           <View style={styles.segmented}>
-            <SegmentButton
-              label="계속 복용"
-              selected={!hasEndDate}
-              onPress={() => setOngoing(true)}
-            />
-            <SegmentButton
-              label="기간 정하기"
-              selected={hasEndDate}
-              onPress={() => setOngoing(false)}
-            />
+            <Segment label="계속 복용" selected={!hasEndDate} onPress={() => setOngoing(true)} />
+            <Segment label="기간 정하기" selected={hasEndDate} onPress={() => setOngoing(false)} />
           </View>
 
           {hasEndDate && endDate ? (
-            <View style={styles.periodBlock}>
-              <DateRow
-                value={formatDate(endDate)}
-                caption="마지막 복용일"
+            <>
+              <Row
+                first
+                leading={<Icon name="calendar" size="md" color={colors.textSecondary} />}
+                showChevron
                 onPress={() => setPicker({ kind: 'date', field: 'end' })}
                 accessibilityLabel={`복용 종료일 ${formatDate(endDate)}, 변경하려면 누르세요`}
-              />
+              >
+                <Text style={styles.dateCaption}>마지막 복용일</Text>
+                <Text style={styles.dateText}>{formatDate(endDate)}</Text>
+              </Row>
               <View style={styles.presetRow}>
                 {DURATION_PRESETS.map((days) => {
                   const active = dayCount(startDate, endDate) === days;
@@ -238,28 +246,27 @@ export function MedicationForm({ medication, submitLabel, onSubmit, onDelete, sa
                   );
                 })}
               </View>
-              <Text style={styles.periodSummary}>
+              <Text style={styles.summary}>
                 {startDate === endDate
                   ? '오늘 하루만 복용합니다.'
                   : `${dayCount(startDate, endDate)}일치입니다. 마지막 날이 지나면 알림이 저절로 멈춥니다.`}
               </Text>
-            </View>
+            </>
           ) : (
-            <Text style={styles.periodSummary}>
+            <Text style={styles.summary}>
               종료일 없이 계속 복용합니다. 나중에 언제든 기간을 정할 수 있습니다.
             </Text>
           )}
-        </Field>
+          {errors.endDate && <FieldError message={errors.endDate} />}
+        </Section>
 
         {onDelete && (
-          <View style={styles.deleteWrap}>
-            <AppButton label="이 약 삭제" variant="danger" onPress={onDelete} />
-          </View>
+          <Button label="이 약 삭제" icon="trash" variant="danger" onPress={onDelete} />
         )}
       </ScrollView>
 
-      <View style={styles.footer}>
-        <AppButton label={submitLabel} onPress={handleSubmit} loading={saving} />
+      <View style={[styles.footer, { paddingBottom: spacing.md + insets.bottom }]}>
+        <Button label={submitLabel} onPress={handleSubmit} loading={saving} disabled={saving} />
       </View>
 
       {picker && (
@@ -270,63 +277,11 @@ export function MedicationForm({ medication, submitLabel, onSubmit, onDelete, sa
           onChange={handlePickerChange}
         />
       )}
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
-function Field({
-  label,
-  hint,
-  error,
-  children,
-}: {
-  label: string;
-  hint?: string;
-  error?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <Card style={styles.field}>
-      <Text style={styles.fieldLabel}>{label}</Text>
-      {hint && <Text style={styles.fieldHint}>{hint}</Text>}
-      <View style={styles.fieldBody}>{children}</View>
-      {error && (
-        <Text style={styles.fieldError} accessibilityLiveRegion="polite">
-          {error}
-        </Text>
-      )}
-    </Card>
-  );
-}
-
-function DateRow({
-  value,
-  caption,
-  onPress,
-  accessibilityLabel,
-}: {
-  value: string;
-  caption?: string;
-  onPress: () => void;
-  accessibilityLabel: string;
-}) {
-  return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={accessibilityLabel}
-      style={({ pressed }) => [styles.dateRow, pressed && styles.pressed]}
-    >
-      <View style={styles.dateRowText}>
-        {caption && <Text style={styles.dateCaption}>{caption}</Text>}
-        <Text style={styles.dateValue}>{value}</Text>
-      </View>
-      <Text style={styles.chevron}>›</Text>
-    </Pressable>
-  );
-}
-
-function SegmentButton({
+function Segment({
   label,
   selected,
   onPress,
@@ -363,116 +318,59 @@ function nextSuggestedTime(times: TimeString[]): TimeString {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
-  content: { padding: spacing.lg, paddingBottom: spacing.xl, gap: spacing.md },
+  content: { padding: gutter, paddingBottom: spacing.xxl, gap: spacing.xl },
 
-  field: {},
-  fieldLabel: { ...type.heading, color: colors.text },
-  fieldHint: { ...type.caption, color: colors.textMuted, marginTop: spacing.xs },
-  fieldBody: { marginTop: spacing.md },
-  fieldError: { ...type.label, color: colors.danger, marginTop: spacing.md },
-
-  input: {
-    minHeight: hitTarget + 4,
-    borderWidth: 1,
-    borderColor: colors.borderStrong,
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    backgroundColor: colors.surface,
-    ...type.body,
-    color: colors.text,
-  },
-  inputError: { borderColor: colors.danger },
-
-  timeList: { gap: spacing.sm },
-  timeChip: {
-    flexDirection: 'row',
-    alignItems: 'stretch',
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    backgroundColor: colors.surfaceAlt,
-    overflow: 'hidden',
-  },
-  timeChipMain: {
-    flex: 1,
-    minHeight: hitTarget,
-    justifyContent: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-  },
   timeText: { ...type.bodyStrong, color: colors.text },
-  timeChipRemove: {
-    width: hitTarget,
+  remove: {
+    width: hitTarget - 8,
+    height: hitTarget - 8,
     alignItems: 'center',
     justifyContent: 'center',
-    borderLeftWidth: 1,
-    borderLeftColor: colors.border,
   },
-  timeChipRemoveText: { ...type.body, color: colors.textMuted },
-  addTime: { marginTop: spacing.md, alignItems: 'flex-start' },
 
-  dateRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    minHeight: hitTarget + 4,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    backgroundColor: colors.surfaceAlt,
-  },
-  dateRowText: { flex: 1 },
-  dateCaption: { ...type.caption, color: colors.textMuted, marginBottom: 2 },
-  dateValue: { ...type.bodyStrong, color: colors.text },
-  chevron: { ...type.title, color: colors.textMuted, marginLeft: spacing.sm },
+  dateText: { ...type.bodyStrong, color: colors.text },
+  dateCaption: { ...type.caption, color: colors.textSecondary, marginBottom: 2 },
 
   segmented: {
     flexDirection: 'row',
-    backgroundColor: colors.surfaceAlt,
+    backgroundColor: colors.bgAlt,
     borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
     padding: 3,
     gap: 3,
   },
   segment: {
     flex: 1,
-    minHeight: hitTarget - 6,
+    minHeight: hitTarget - 8,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: radius.sm,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.sm,
   },
-  segmentActive: { backgroundColor: colors.surface },
+  segmentActive: { backgroundColor: colors.bg },
   segmentText: { ...type.label, color: colors.textSecondary, textAlign: 'center' },
   segmentTextActive: { color: colors.brand },
 
-  periodBlock: { marginTop: spacing.md, gap: spacing.md },
   presetRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   preset: {
     minHeight: 40,
     justifyContent: 'center',
     paddingHorizontal: spacing.lg,
     borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.bgAlt,
   },
-  presetActive: { backgroundColor: colors.brand, borderColor: colors.brand },
+  presetActive: { backgroundColor: colors.brand },
   presetText: { ...type.label, color: colors.textSecondary },
-  presetTextActive: { color: colors.onBrand },
-  periodSummary: { ...type.caption, color: colors.textMuted, marginTop: spacing.md },
+  presetTextActive: { color: colors.textOnBrand },
 
-  deleteWrap: { marginTop: spacing.sm },
-  pressed: { opacity: 0.7 },
+  summary: { ...type.caption, color: colors.textSecondary, lineHeight: 19 },
+  pressed: { opacity: 0.6 },
 
   footer: {
-    padding: spacing.lg,
-    borderTopWidth: 1,
+    paddingHorizontal: gutter,
+    paddingTop: spacing.md,
+    backgroundColor: colors.bg,
+    borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: colors.border,
-    backgroundColor: colors.surface,
   },
 });

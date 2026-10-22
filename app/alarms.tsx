@@ -2,8 +2,8 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { AppButton } from '../src/components/AppButton';
-import { Card } from '../src/components/Card';
+import { Icon } from '../src/components/Icon';
+import { Button, Notice, Row, Section } from '../src/components/ui';
 import { formatDate, formatRelativeDay, formatTime } from '../src/lib/date';
 import {
   readPermissions,
@@ -13,7 +13,7 @@ import {
   type PermissionState,
   type ScheduledDose,
 } from '../src/lib/notifications';
-import { colors, hitTarget, radius, spacing, type } from '../src/theme';
+import { colors, gutter, radius, spacing, type } from '../src/theme';
 
 const TEST_DELAY_SECONDS = 60;
 
@@ -24,14 +24,21 @@ const TEST_DELAY_SECONDS = 60;
 export default function AlarmsScreen() {
   const [doses, setDoses] = useState<ScheduledDose[] | null>(null);
   const [permissions, setPermissions] = useState<PermissionState | null>(null);
+  const [failed, setFailed] = useState(false);
+  const [busy, setBusy] = useState(false);
 
   const load = useCallback(async () => {
-    const [nextPermissions, nextDoses] = await Promise.all([
-      readPermissions(),
-      readScheduledDoses(),
-    ]);
-    setPermissions(nextPermissions);
-    setDoses(nextDoses);
+    try {
+      const [nextPermissions, nextDoses] = await Promise.all([
+        readPermissions(),
+        readScheduledDoses(),
+      ]);
+      setPermissions(nextPermissions);
+      setDoses(nextDoses);
+      setFailed(false);
+    } catch {
+      setFailed(true);
+    }
   }, []);
 
   useFocusEffect(
@@ -41,58 +48,103 @@ export default function AlarmsScreen() {
   );
 
   async function handleResync() {
-    const summary = await syncSchedule();
-    await load();
-    Alert.alert('예약을 다시 맞췄습니다', `복용 알림 ${summary.count}개가 예약되어 있습니다.`);
+    if (busy) return;
+    setBusy(true);
+    try {
+      const summary = await syncSchedule();
+      await load();
+      Alert.alert('예약을 다시 맞췄습니다', `복용 알림 ${summary.count}개가 예약되어 있습니다.`);
+    } catch {
+      Alert.alert('예약을 맞추지 못했습니다', '잠시 후 다시 시도해 주세요.');
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function handleTest() {
-    const at = await sendTestNotification(TEST_DELAY_SECONDS);
-    const hhmm = `${String(at.getHours()).padStart(2, '0')}:${String(at.getMinutes()).padStart(2, '0')}`;
-    Alert.alert(
-      '테스트 알림을 걸었습니다',
-      `${formatTime(hhmm)}에 울립니다.\n\n지금 화면을 끄고 기다려 보세요.`,
-    );
+    if (busy) return;
+    setBusy(true);
+    try {
+      const at = await sendTestNotification(TEST_DELAY_SECONDS);
+      const hhmm = `${String(at.getHours()).padStart(2, '0')}:${String(at.getMinutes()).padStart(2, '0')}`;
+      Alert.alert(
+        '테스트 알림을 걸었습니다',
+        `${formatTime(hhmm)}에 울립니다.\n\n지금 화면을 끄고 기다려 보세요.`,
+      );
+    } catch {
+      Alert.alert('테스트 알림을 걸지 못했습니다', '알림 권한을 확인해 주세요.');
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <Card>
-        <Text style={styles.summaryCount}>
-          복용 알림 {doses?.length ?? 0}개
-        </Text>
-        <Text style={styles.summaryHint}>기기에 실제로 예약되어 있는 알림입니다.</Text>
-        <View style={styles.permissionList}>
+      {failed ? (
+        <Notice
+          tone="info"
+          title="상태를 확인하지 못했어요"
+          body="권한과 예약 목록을 읽지 못했습니다."
+          actionLabel="다시 확인"
+          onAction={load}
+        />
+      ) : (
+        <View style={styles.summary}>
+          <Text style={styles.summaryCount}>
+            {doses === null ? '확인 중' : `복용 알림 ${doses.length}개`}
+          </Text>
+          <Text style={styles.summaryHint}>기기에 실제로 예약되어 있는 알림입니다.</Text>
+        </View>
+      )}
+
+      <Section title="권한">
+        <View>
           <PermissionRow
+            first
             label="알림"
             granted={permissions?.canNotify}
-            offText="꺼짐 — 알림이 오지 않습니다"
+            offText="꺼짐 · 알림이 오지 않습니다"
           />
           <PermissionRow
             label="알람 및 리마인더"
             granted={permissions?.exactAlarms}
-            offText="꺼짐 — 알림이 늦을 수 있습니다"
+            offText="꺼짐 · 알림이 늦을 수 있습니다"
           />
         </View>
-      </Card>
+        <Text style={styles.footnote}>
+          두 권한이 모두 허용되어도 제조사 절전 기능이 알림을 미룰 수 있습니다. 알림이 늦으면
+          설정에서 또박을 배터리 최적화 대상에서 빼 주세요.
+        </Text>
+      </Section>
 
       <View style={styles.actions}>
-        <AppButton label={`${TEST_DELAY_SECONDS}초 뒤 테스트 알림`} onPress={handleTest} />
-        <AppButton label="예약 다시 맞추기" variant="secondary" onPress={handleResync} />
+        <Button
+          label={`${TEST_DELAY_SECONDS}초 뒤 테스트 알림`}
+          icon="bell"
+          onPress={handleTest}
+          disabled={busy}
+        />
+        <Button
+          label="예약 다시 맞추기"
+          icon="refresh"
+          variant="secondary"
+          onPress={handleResync}
+          disabled={busy}
+        />
       </View>
 
-      {doses !== null && doses.length === 0 ? (
-        <Card tone="muted">
-          <Text style={styles.empty}>예약된 알림이 없습니다.</Text>
-        </Card>
-      ) : (
-        doses !== null && (
-          <Card padded={false}>
-            {doses.map((dose, index) => (
-              <DoseRow key={dose.id} dose={dose} divider={index > 0} />
-            ))}
-          </Card>
-        )
+      {doses !== null && (
+        <Section title="예약 목록">
+          {doses.length === 0 ? (
+            <Text style={styles.empty}>예약된 알림이 없습니다.</Text>
+          ) : (
+            <View>
+              {doses.map((dose, index) => (
+                <DoseRow key={dose.id} dose={dose} first={index === 0} />
+              ))}
+            </View>
+          )}
+        </Section>
       )}
     </ScrollView>
   );
@@ -102,41 +154,42 @@ function PermissionRow({
   label,
   granted,
   offText,
+  first,
 }: {
   label: string;
   granted: boolean | undefined;
   offText: string;
+  first?: boolean;
 }) {
   const state = granted === undefined ? '확인 중' : granted ? '허용됨' : offText;
   return (
-    <View style={styles.permissionRow}>
-      <View
-        style={[
-          styles.permissionDot,
-          granted === undefined
-            ? styles.dotUnknown
-            : granted
-              ? styles.dotOk
-              : styles.dotOff,
-        ]}
-      />
+    <Row
+      first={first}
+      leading={
+        <Icon
+          name={granted === undefined ? 'help' : granted ? 'check-circle' : 'bell-off'}
+          size="md"
+          color={granted === undefined ? colors.textSecondary : granted ? colors.success : colors.warning}
+        />
+      }
+    >
       <Text style={styles.permissionLabel}>{label}</Text>
-      <Text style={[styles.permissionState, granted === false && styles.permissionStateOff]}>
+      <Text style={[styles.permissionState, granted === false && styles.permissionOff]}>
         {state}
       </Text>
-    </View>
+    </Row>
   );
 }
 
-function DoseRow({ dose, divider }: { dose: ScheduledDose; divider: boolean }) {
+function DoseRow({ dose, first }: { dose: ScheduledDose; first: boolean }) {
   // 식별자가 가리키는 시각과 안드로이드가 들고 있는 시각이 같아야 한다.
   const expected = `${dose.date} ${dose.time}`;
   const actual = dose.firesAt ? formatClock(dose.firesAt) : null;
   const mismatch = actual !== null && actual !== expected;
 
   return (
-    <View style={[styles.doseRow, divider && styles.doseDivider, mismatch && styles.doseMismatch]}>
-      <View style={styles.doseMain}>
+    <Row first={first} style={mismatch ? styles.mismatch : undefined}>
+      <View style={styles.doseTop}>
         <Text style={styles.doseWhen}>
           {formatRelativeDay(dose.date)} {formatTime(dose.time)}
         </Text>
@@ -146,7 +199,7 @@ function DoseRow({ dose, divider }: { dose: ScheduledDose; divider: boolean }) {
       </View>
       <Text style={styles.doseDate}>{formatDate(dose.date)}</Text>
       {mismatch && <Text style={styles.doseWarn}>기기가 들고 있는 시각: {actual}</Text>}
-    </View>
+    </Row>
   );
 }
 
@@ -157,36 +210,24 @@ function formatClock(date: Date): string {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
-  content: { padding: spacing.lg, gap: spacing.lg },
+  content: { padding: gutter, gap: spacing.xl },
 
+  summary: { gap: 2 },
   summaryCount: { ...type.title, color: colors.text },
-  summaryHint: { ...type.caption, color: colors.textMuted, marginTop: 2 },
-  permissionList: { marginTop: spacing.lg, gap: spacing.md },
-  permissionRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  permissionDot: { width: 8, height: 8, borderRadius: 4 },
-  dotOk: { backgroundColor: colors.success },
-  dotOff: { backgroundColor: colors.warning },
-  dotUnknown: { backgroundColor: colors.borderStrong },
-  permissionLabel: { ...type.body, color: colors.text, flex: 1 },
-  permissionState: { ...type.caption, color: colors.textMuted, flexShrink: 1, textAlign: 'right' },
-  permissionStateOff: { color: colors.warning },
+  summaryHint: { ...type.caption, color: colors.textSecondary },
+
+  permissionLabel: { ...type.body, color: colors.text },
+  permissionState: { ...type.caption, color: colors.textSecondary, marginTop: 2 },
+  permissionOff: { color: colors.warning },
+  footnote: { ...type.caption, color: colors.textSecondary, lineHeight: 19 },
 
   actions: { gap: spacing.sm },
+  empty: { ...type.body, color: colors.textSecondary },
 
-  empty: { ...type.body, color: colors.textMuted, textAlign: 'center' },
-
-  doseRow: { paddingHorizontal: spacing.lg, paddingVertical: spacing.md, minHeight: hitTarget },
-  doseDivider: { borderTopWidth: 1, borderTopColor: colors.border },
-  doseMismatch: { backgroundColor: colors.dangerSoft },
-  doseMain: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  doseWhen: { ...type.mono, color: colors.text },
+  doseTop: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  doseWhen: { ...type.bodyStrong, color: colors.text },
   doseName: { ...type.body, color: colors.textSecondary, flex: 1 },
-  doseDate: { ...type.caption, color: colors.textMuted, marginTop: 2 },
-  doseWarn: {
-    ...type.caption,
-    color: colors.danger,
-    fontWeight: '700',
-    marginTop: spacing.xs,
-    borderRadius: radius.sm,
-  },
+  doseDate: { ...type.caption, color: colors.textSecondary, marginTop: 2 },
+  doseWarn: { ...type.caption, color: colors.danger, fontWeight: '700', marginTop: spacing.xs },
+  mismatch: { backgroundColor: colors.dangerSoft, borderRadius: radius.sm },
 });

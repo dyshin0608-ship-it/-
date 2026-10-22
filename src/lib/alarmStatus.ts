@@ -14,12 +14,17 @@ export type AlarmStatusKind =
   /** 다 괜찮고 예약된 알림도 있다. */
   | 'ready'
   /** 다 괜찮지만 예약할 약이 없다. */
-  | 'nothing-scheduled';
+  | 'nothing-scheduled'
+  /** 권한을 확인하다가 실패했다. 허용된 것으로 가정하면 안 된다. */
+  | 'check-failed';
 
 export function alarmStatusKind(
   permissions: PermissionState | null,
   scheduledCount: number,
+  checkFailed = false,
 ): AlarmStatusKind {
+  // 확인에 실패했으면 모른다고 말한다. 허용된 것처럼 보이게 두지 않는다.
+  if (checkFailed) return 'check-failed';
   if (!permissions) return 'unknown';
   if (!permissions.canNotify) return 'notifications-off';
   if (!permissions.exactAlarms) return 'exact-alarms-off';

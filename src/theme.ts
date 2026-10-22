@@ -1,58 +1,45 @@
-import { Platform, type TextStyle, type ViewStyle } from 'react-native';
+import type { TextStyle } from 'react-native';
 
 /**
  * 또박 디자인 토큰.
  *
- * 흰색 카드 · 차분한 블루 · 밝은 회색 배경. 의료 앱의 신뢰감이 먼저고,
- * 장식은 뒤다. 글자 색은 모두 흰색/밝은 배경 위에서 WCAG AA(4.5:1) 이상을
- * 넘도록 골랐다. 약을 챙기는 사람이 어르신일 수 있어서 본문을 16 아래로
- * 내리지 않는다.
+ * 흰 바탕 · 네이비 글자 · 블루 강조 하나. 면을 카드로 겹쳐 쌓는 대신
+ * 머리글과 1px 구분선으로 나눈다. 그림자는 쓰지 않는다.
+ *
+ * 글자색은 모두 쓰이는 배경 위에서 WCAG AA(4.5:1)를 넘는다.
  */
 export const colors = {
-  // 배경과 면
-  bg: '#F5F7FA',
-  surface: '#FFFFFF',
-  surfaceAlt: '#F0F4F9',
-  border: '#E3E8EF',
-  borderStrong: '#CFD8E3',
+  bg: '#FFFFFF',
+  bgAlt: '#F3F6FA',
+  border: '#E2E8F0',
 
-  // 글자
-  text: '#111827',
-  textSecondary: '#44506A',
-  textMuted: '#67718A',
-  onBrand: '#FFFFFF',
+  text: '#172033',
+  textSecondary: '#64748B',
+  textOnBrand: '#FFFFFF',
 
-  // 브랜드
-  brand: '#2563C9',
-  brandPressed: '#1C4FA6',
-  brandSoft: '#E9F0FC',
-  brandBorder: '#C3D6F5',
+  brand: '#2563EB',
+  brandPressed: '#1D4ED8',
+  brandSoft: '#EFF4FE',
 
-  // 상태 (글자색은 전부 밝은 배경 위 AA 통과)
-  success: '#146C43',
-  successSoft: '#E7F3EC',
-  successBorder: '#BFE0CD',
-  warning: '#8A5300',
-  warningSoft: '#FDF4E5',
-  warningBorder: '#F0DBB2',
-  danger: '#B3261E',
-  dangerSoft: '#FCECEB',
-  dangerBorder: '#F0C4C1',
+  danger: '#DC2626',
+  dangerSoft: '#FEF2F2',
+  warning: '#D97706',
+  warningSoft: '#FFFBEB',
+  success: '#15803D',
 } as const;
 
 /**
- * 글자 단계. fontSize와 lineHeight를 함께 묶어, 시스템 글자 크기를 키워도
- * 줄이 겹치지 않게 한다. 높이를 고정하지 않는 것이 핵심이라 여기에 height는 없다.
+ * 글자 단계. fontSize와 lineHeight를 함께 두어 시스템 글자 크기를 키워도
+ * 줄이 겹치지 않는다. 높이를 고정하는 토큰은 일부러 두지 않았다.
  */
 export const type = {
-  display: { fontSize: 26, lineHeight: 34, fontWeight: '700' },
-  title: { fontSize: 20, lineHeight: 28, fontWeight: '700' },
-  heading: { fontSize: 17, lineHeight: 24, fontWeight: '700' },
-  body: { fontSize: 16, lineHeight: 24, fontWeight: '400' },
-  bodyStrong: { fontSize: 16, lineHeight: 24, fontWeight: '600' },
+  display: { fontSize: 24, lineHeight: 32, fontWeight: '700' },
+  title: { fontSize: 19, lineHeight: 26, fontWeight: '700' },
+  section: { fontSize: 13, lineHeight: 18, fontWeight: '700', letterSpacing: 0.3 },
+  body: { fontSize: 16, lineHeight: 23, fontWeight: '400' },
+  bodyStrong: { fontSize: 16, lineHeight: 23, fontWeight: '600' },
   label: { fontSize: 14, lineHeight: 20, fontWeight: '600' },
   caption: { fontSize: 13, lineHeight: 18, fontWeight: '400' },
-  mono: { fontSize: 15, lineHeight: 22, fontWeight: '600' },
 } satisfies Record<string, TextStyle>;
 
 export const spacing = {
@@ -64,23 +51,13 @@ export const spacing = {
   xxl: 32,
 } as const;
 
-export const radius = {
-  sm: 10,
-  md: 14,
-  lg: 18,
-  pill: 999,
-} as const;
+export const radius = { sm: 8, md: 12, lg: 16, pill: 999 } as const;
 
-/** 손가락이 닿는 모든 것의 최소 높이. 안드로이드 접근성 권장치가 48dp다. */
+/** 화면 좌우 공통 여백. 모든 화면이 같은 선에 맞는다. */
+export const gutter = spacing.lg;
+
+/** 손가락이 닿는 모든 것의 최소 높이 (안드로이드 접근성 권장치). */
 export const hitTarget = 48;
 
-/** 카드에 쓰는 아주 옅은 그림자. 테두리를 두껍게 쓰는 대신 이것으로 면을 띄운다. */
-export const elevation = Platform.select<ViewStyle>({
-  android: { elevation: 1 },
-  default: {
-    shadowColor: '#0B1A33',
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-  },
-}) as ViewStyle;
+/** 아이콘 크기 단계. 아이콘마다 제각각 크기를 주지 않는다. */
+export const iconSize = { sm: 16, md: 20, lg: 24, xl: 32 } as const;

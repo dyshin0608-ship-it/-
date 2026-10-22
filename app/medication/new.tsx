@@ -18,7 +18,7 @@ export default function NewMedicationScreen() {
       router.back();
     } catch {
       setSaving(false);
-      Alert.alert('저장하지 못했습니다', '잠시 후 다시 시도해 주세요.');
+      Alert.alert('저장하지 못했습니다', '기기에 저장하는 중 문제가 생겼습니다. 잠시 후 다시 시도해 주세요.');
     }
   }
 
