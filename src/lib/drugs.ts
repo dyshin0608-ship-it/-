@@ -129,7 +129,7 @@ export type BodyRegion =
   | 'chest'
   | 'abdomen'
   | 'pelvis'
-  | 'limbs'
+  | 'joints'
   | 'skin';
 
 /**
@@ -150,7 +150,7 @@ const REGION_BY_PART: Record<string, BodyRegion[]> = {
   '가슴·기관지': ['chest'],
   '배·속': ['abdomen'],
   아랫배: ['pelvis'],
-  '근육·관절': ['limbs'],
+  '근육·관절': ['joints'],
   피부: ['skin'],
 };
 
