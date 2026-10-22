@@ -56,30 +56,109 @@ export function datasetUpdatedAt(): string {
   return latest;
 }
 
+/**
+ * "위장약", "설사약"처럼 제품명이 아니라 쓰임새로 부르는 말을 효능효과에 적힌
+ * 낱말로 풀어 준다. 약 이름을 정확히 모를 때도 찾을 수 있게 하기 위한 것이고,
+ * 여기 적힌 낱말은 식약처 문장에 실제로 쓰이는 표현이다.
+ */
+const CATEGORY_KEYWORDS: Record<string, string[]> = {
+  위장약: ['위염', '속쓰림', '위산과다', '소화불량'],
+  소화제: ['소화불량', '소화촉진'],
+  제산제: ['위산과다', '속쓰림'],
+  설사약: ['설사'],
+  지사제: ['설사'],
+  변비약: ['변비'],
+  감기약: ['감기'],
+  해열제: ['해열', '발열'],
+  진통제: ['진통', '동통'],
+  두통약: ['두통'],
+  생리통약: ['월경통', '생리통'],
+  근육통약: ['근육통'],
+  관절약: ['관절통'],
+  알레르기약: ['알레르기', '두드러기'],
+  비염약: ['비염'],
+  기침약: ['기침'],
+  가래약: ['가래'],
+  멀미약: ['멀미'],
+  수면제: ['불면'],
+  무좀약: ['무좀', '백선'],
+  치질약: ['치질', '치핵'],
+  안약: ['결막', '점안'],
+  피부약: ['피부염', '습진'],
+  상처약: ['상처', '화상'],
+  구내염약: ['구내염'],
+  영양제: ['비타민'],
+};
+
+/** 찾은 까닭. 제품명이 맞은 것인지, 효능효과 문장이 맞은 것인지. */
+export type DrugMatch = DrugInfo & { matchedBy: 'name' | 'efficacy' };
+
 function normalize(value: string): string {
   return value.replace(/\s+/g, '').toLowerCase();
 }
 
+/** "위장약" 같은 말이 들어오면 효능효과에서 찾을 낱말들로 바꾼다. */
+function efficacyTerms(query: string): string[] {
+  const q = normalize(query);
+  const terms = new Set<string>();
+  for (const [category, words] of Object.entries(CATEGORY_KEYWORDS)) {
+    if (q.includes(normalize(category)) || normalize(category).includes(q)) {
+      for (const word of words) terms.add(word);
+    }
+  }
+  // 사전에 없는 말도 본문에서 그대로 찾아 본다 ("두드러기", "코막힘" 등)
+  if (query.trim().length >= 2) terms.add(query.trim());
+  return [...terms];
+}
+
 /**
- * 제품명으로 찾는다. 앞에서 일치하는 것을 먼저 보여 준다
- * ("타이레놀"을 치면 "어린이타이레놀"보다 "타이레놀정"이 먼저).
+ * 약을 찾는다.
+ *
+ * 먼저 제품명으로 찾고(앞에서 일치하는 것이 먼저), 그것만으로 부족하면
+ * 효능효과 문장에서 찾는다. 약 이름을 정확히 모르고 "위장약"처럼 쓰임새로만
+ * 아는 경우가 흔하기 때문이다. 효능효과로 찾은 것은 그렇다고 표시해서,
+ * 왜 이 약이 나왔는지 화면에서 알 수 있게 한다.
  */
-export function searchDrugs(query: string, limit = 8): DrugInfo[] {
+export function searchDrugs(query: string, limit = 8): DrugMatch[] {
   const q = normalize(query);
   if (q.length < 2) return [];
 
   const starts: DrugInfo[] = [];
   const contains: DrugInfo[] = [];
-
   for (const drug of all()) {
     const name = normalize(drug.name);
     if (name.startsWith(q)) starts.push(drug);
     else if (name.includes(q)) contains.push(drug);
-    if (starts.length >= limit) break;
   }
 
-  const byNameLength = (a: DrugInfo, b: DrugInfo) => a.name.length - b.name.length;
-  return [...starts.sort(byNameLength), ...contains.sort(byNameLength)].slice(0, limit);
+  const byLength = (a: DrugInfo, b: DrugInfo) => a.name.length - b.name.length;
+  const byName: DrugMatch[] = [...starts.sort(byLength), ...contains.sort(byLength)]
+    .slice(0, limit)
+    .map((drug) => ({ ...drug, matchedBy: 'name' as const }));
+  if (byName.length >= limit) return byName;
+
+  const seen = new Set(byName.map((drug) => drug.seq));
+  const terms = efficacyTerms(query);
+
+  // 찾은 낱말이 효능효과 문장의 앞쪽에 나올수록 그 약의 주된 쓰임새다.
+  // 그냥 걸리는 대로 담으면 가나다순으로 앞선 약이 올라와, 설사약을 찾는데
+  // 위장염 약이 먼저 나오는 일이 생긴다.
+  const scored: { drug: DrugInfo; at: number }[] = [];
+  for (const drug of all()) {
+    if (seen.has(drug.seq)) continue;
+    let at = Infinity;
+    for (const term of terms) {
+      const found = drug.efficacy.indexOf(term);
+      if (found >= 0 && found < at) at = found;
+    }
+    if (at < Infinity) scored.push({ drug, at });
+  }
+  scored.sort((a, b) => a.at - b.at || a.drug.efficacy.length - b.drug.efficacy.length);
+
+  const byEfficacy = scored
+    .slice(0, limit - byName.length)
+    .map(({ drug }) => ({ ...drug, matchedBy: 'efficacy' as const }));
+  return [...byName, ...byEfficacy];
 }
 
 export function getDrug(seq: string): DrugInfo | null {

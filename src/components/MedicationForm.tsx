@@ -158,12 +158,18 @@ export function MedicationForm({ medication, submitLabel, onSubmit, onDelete, sa
               setDrugSeq(undefined);
               clearError('name');
             }}
-            placeholder="예: 타이레놀"
+            placeholder="예: 타이레놀, 위장약"
             maxLength={NAME_MAX}
             autoFocus={!medication}
             returnKeyType="done"
             error={errors.name}
           />
+
+          {name.trim().length >= 2 && suggestions.length === 0 && !drugSeq && (
+            <Text style={styles.suggestNone}>
+              식약처 자료에서 찾지 못했습니다. 이름 그대로 등록해도 알림은 정상입니다.
+            </Text>
+          )}
 
           {suggestions.length > 0 && (
             <View style={styles.suggestions}>
@@ -183,8 +189,9 @@ export function MedicationForm({ medication, submitLabel, onSubmit, onDelete, sa
                   <Text style={styles.suggestName} numberOfLines={1}>
                     {drug.name}
                   </Text>
-                  <Text style={styles.suggestMaker} numberOfLines={1}>
-                    {drug.maker}
+                  {/* 쓰임새로 찾은 약은 왜 나왔는지 보여 준다 */}
+                  <Text style={styles.suggestMaker} numberOfLines={2}>
+                    {drug.matchedBy === 'efficacy' ? drug.efficacy : drug.maker}
                   </Text>
                 </Row>
               ))}
@@ -380,6 +387,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bgAlt,
   },
   suggestHint: { ...type.caption, color: colors.textSecondary, paddingTop: spacing.md },
+  suggestNone: { ...type.caption, color: colors.textSecondary, marginTop: spacing.md },
   suggestName: { ...type.bodyStrong, color: colors.text },
   suggestMaker: { ...type.caption, color: colors.textSecondary, marginTop: 2 },
   linked: { marginTop: spacing.sm },

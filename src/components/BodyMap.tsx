@@ -27,9 +27,9 @@ const OUTLINE =
 /** 중심은 진하고 가장자리로 갈수록 완전히 투명해진다. */
 const GRADIENT =
   '<radialGradient id="g">' +
-  '<stop offset="0" stop-color="#E05252" stop-opacity="0.80"/>' +
-  '<stop offset="0.45" stop-color="#E86A6A" stop-opacity="0.62"/>' +
-  '<stop offset="0.75" stop-color="#F08A8A" stop-opacity="0.22"/>' +
+  '<stop offset="0" stop-color="#E05252" stop-opacity="0.55"/>' +
+  '<stop offset="0.45" stop-color="#E86A6A" stop-opacity="0.40"/>' +
+  '<stop offset="0.75" stop-color="#F08A8A" stop-opacity="0.14"/>' +
   '<stop offset="1" stop-color="#F3A0A0" stop-opacity="0"/>' +
   '</radialGradient>';
 
