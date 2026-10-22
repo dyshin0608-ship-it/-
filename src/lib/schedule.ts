@@ -20,6 +20,13 @@ export type BuildOptions = {
   windowDays: number;
   /** 한 번에 예약해 둘 알림 개수 상한. */
   max: number;
+  /**
+   * 이미 먹었다고(또는 못 먹었다고) 표시한 회차의 식별자.
+   *
+   * 알림만 취소하면 다음 동기화에서 되살아난다. 예약을 만드는 쪽에서
+   * 빼 줘야 다시 울리지 않는다.
+   */
+  skip?: ReadonlySet<string>;
 };
 
 export function doseNotificationId(
@@ -73,8 +80,10 @@ export function buildOccurrences(
       for (const time of medication.times) {
         const at = doseDateTime(date, time);
         if (at.getTime() <= nowMs) continue; // 이미 지난 시각
+        const id = doseNotificationId(medication.id, date, time);
+        if (options.skip?.has(id)) continue; // 이미 표시한 회차
         occurrences.push({
-          id: doseNotificationId(medication.id, date, time),
+          id,
           medicationId: medication.id,
           medicationName: medication.name,
           date,

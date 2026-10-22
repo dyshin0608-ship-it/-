@@ -4,9 +4,17 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AlarmStatusCard } from '../src/components/AlarmStatusCard';
-import { Icon } from '../src/components/Icon';
+import { Icon, type IconName } from '../src/components/Icon';
 import { Button, EmptyState, IconButton, Row, Section } from '../src/components/ui';
+import { Pressable } from 'react-native';
 import { useAlarmStatus } from '../src/hooks/useAlarmStatus';
+import {
+  doseKey,
+  getDoseRecords,
+  setDoseStatus,
+  type DoseRecords,
+  type DoseStatus,
+} from '../src/lib/doses';
 import {
   dayCount,
   formatCountdown,
@@ -16,6 +24,7 @@ import {
   formatTime,
   today,
 } from '../src/lib/date';
+import { syncSchedule } from '../src/lib/notifications';
 import { dosesForDate, type DayDose, type DoseOccurrence } from '../src/lib/schedule';
 import { getMedications } from '../src/lib/storage';
 import type { Medication } from '../src/lib/types';
@@ -23,6 +32,7 @@ import { colors, gutter, radius, spacing, type } from '../src/theme';
 
 export default function HomeScreen() {
   const [medications, setMedications] = useState<Medication[] | null>(null);
+  const [records, setRecords] = useState<DoseRecords>({});
   const insets = useSafeAreaInsets();
   const alarm = useAlarmStatus();
 
@@ -30,14 +40,29 @@ export default function HomeScreen() {
   useFocusEffect(
     useCallback(() => {
       let cancelled = false;
-      getMedications().then((list) => {
-        if (!cancelled) setMedications(list);
+      void Promise.all([getMedications(), getDoseRecords()]).then(([list, saved]) => {
+        if (cancelled) return;
+        setMedications(list);
+        setRecords(saved);
       });
       return () => {
         cancelled = true;
       };
     }, []),
   );
+
+  /** 표시를 바꾼다. 기록한 회차는 알림이 다시 오지 않도록 예약도 함께 고친다. */
+  async function markDose(key: string, status: DoseStatus | null) {
+    setRecords((prev) => {
+      const next = { ...prev };
+      if (status === null) delete next[key];
+      else next[key] = { status, recordedAt: new Date().toISOString() };
+      return next;
+    });
+    await setDoseStatus(key, status);
+    await syncSchedule();
+    await alarm.refresh();
+  }
 
   const now = new Date();
   const todayDate = today();
@@ -90,14 +115,19 @@ export default function HomeScreen() {
             {todayDoses.length > 0 && (
               <Section title="오늘 일정">
                 <View>
-                  {todayDoses.map((dose, index) => (
-                    <TodayRow
-                      key={`${dose.medicationId}-${dose.time}`}
-                      dose={dose}
-                      now={now}
-                      first={index === 0}
-                    />
-                  ))}
+                  {todayDoses.map((dose, index) => {
+                    const key = doseKey(dose.medicationId, todayDate, dose.time);
+                    return (
+                      <TodayRow
+                        key={key}
+                        dose={dose}
+                        now={now}
+                        first={index === 0}
+                        status={records[key]?.status ?? null}
+                        onCycle={() => void markDose(key, nextStatus(records[key]?.status ?? null))}
+                      />
+                    );
+                  })}
                 </View>
               </Section>
             )}
@@ -166,19 +196,68 @@ function NextDose({
   );
 }
 
-function TodayRow({ dose, now, first }: { dose: DayDose; now: Date; first: boolean }) {
+/** 빈칸 → 먹음 → 못 먹음 → 모름 → 빈칸. 누를 때마다 한 칸씩 넘어간다. */
+function nextStatus(current: DoseStatus | null): DoseStatus | null {
+  if (current === null) return 'taken';
+  if (current === 'taken') return 'missed';
+  if (current === 'missed') return 'unknown';
+  return null;
+}
+
+const STATUS_VIEW: Record<DoseStatus, { icon: IconName; label: string; color: string }> = {
+  taken: { icon: 'box-check', label: '먹었어요', color: colors.success },
+  missed: { icon: 'box-x', label: '못 먹었어요', color: colors.danger },
+  unknown: { icon: 'box-question', label: '모르겠어요', color: colors.warning },
+};
+
+function TodayRow({
+  dose,
+  now,
+  first,
+  status,
+  onCycle,
+}: {
+  dose: DayDose;
+  now: Date;
+  first: boolean;
+  status: DoseStatus | null;
+  onCycle: () => void;
+}) {
   const past = dose.at.getTime() <= now.getTime();
+  const view = status ? STATUS_VIEW[status] : null;
+  const dim = past && !view;
+
   return (
-    <Row first={first} leading={<Icon name="clock" size="md" color={past ? colors.textSecondary : colors.brand} />}>
+    <Row
+      first={first}
+      leading={<Icon name="clock" size="md" color={dim ? colors.textSecondary : colors.brand} />}
+    >
       <View style={styles.todayRow}>
-        <Text style={[styles.todayTime, past && styles.todayPast]}>{formatTime(dose.time)}</Text>
-        <Text style={[styles.todayName, past && styles.todayPast]} numberOfLines={1}>
+        <Text style={[styles.todayTime, dim && styles.todayPast]}>{formatTime(dose.time)}</Text>
+        <Text style={[styles.todayName, dim && styles.todayPast]} numberOfLines={1}>
           {dose.medicationName}
         </Text>
-        {/* 복용 완료 기능이 없으므로 "먹었다"가 아니라 시계가 지났는지만 말한다. */}
-        <Text style={[styles.todayState, past && styles.todayPast]}>
-          {past ? '지난 시각' : '예정'}
-        </Text>
+
+        <Pressable
+          onPress={onCycle}
+          accessibilityRole="button"
+          accessibilityLabel={
+            view
+              ? `${dose.medicationName} ${formatTime(dose.time)} ${view.label}. 바꾸려면 누르세요`
+              : `${dose.medicationName} ${formatTime(dose.time)} 복용 표시하기`
+          }
+          hitSlop={8}
+          style={({ pressed }) => [styles.mark, pressed && styles.markPressed]}
+        >
+          <Icon
+            name={view ? view.icon : 'box'}
+            size="lg"
+            color={view ? view.color : colors.textSecondary}
+          />
+          <Text style={[styles.markLabel, { color: view ? view.color : colors.textSecondary }]}>
+            {view ? view.label : past ? '지난 시각' : '예정'}
+          </Text>
+        </Pressable>
       </View>
     </Row>
   );
@@ -274,8 +353,10 @@ const styles = StyleSheet.create({
   todayRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   todayTime: { ...type.bodyStrong, color: colors.text, minWidth: 88 },
   todayName: { ...type.body, color: colors.textSecondary, flex: 1 },
-  todayState: { ...type.caption, color: colors.brand },
   todayPast: { color: colors.textSecondary },
+  mark: { alignItems: 'center', gap: 2, minWidth: 64 },
+  markPressed: { opacity: 0.55 },
+  markLabel: { ...type.caption, fontSize: 11, textAlign: 'center' },
 
   medHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   medName: { ...type.bodyStrong, color: colors.text, flexShrink: 1 },

@@ -9,6 +9,7 @@ import {
   parseDoseNotificationId,
   type DoseOccurrence,
 } from './schedule';
+import { getDoseRecords, recordedKeys } from './doses';
 import { getMedications } from './storage';
 
 /**
@@ -153,10 +154,12 @@ async function runSync(): Promise<ScheduleSummary> {
 
   await ensureNotificationChannel();
 
-  const medications = await getMedications();
+  const [medications, records] = await Promise.all([getMedications(), getDoseRecords()]);
   const desired = buildOccurrences(medications, new Date(), {
     windowDays: WINDOW_DAYS,
     max: MAX_SCHEDULED,
+    // 이미 표시한 회차는 다시 울리지 않는다.
+    skip: recordedKeys(records),
   });
 
   const existing = await Notifications.getAllScheduledNotificationsAsync();

@@ -19,7 +19,11 @@ export type IconName =
   | 'check-circle'
   | 'help'
   | 'refresh'
-  | 'pill';
+  | 'pill'
+  | 'box'
+  | 'box-check'
+  | 'box-x'
+  | 'box-question';
 
 type Props = {
   name: IconName;
@@ -111,6 +115,27 @@ export function Icon({ name, size = 'md', color = colors.text }: Props) {
           <Path d="M21 4v6h-6" {...stroke} />
           <Path d="M3 20v-6h6" {...stroke} />
           <Path d="M4.4 9a8 8 0 0 1 13.2-3L21 10M3 14l3.4 4A8 8 0 0 0 19.6 15" {...stroke} />
+        </>
+      )}
+      {/* 복용 표시: 빈 네모 → 먹음(체크) / 못 먹음(X) / 모름(물음표) */}
+      {name === 'box' && <Rect x="3.5" y="3.5" width="17" height="17" rx="4.5" {...stroke} />}
+      {name === 'box-check' && (
+        <>
+          <Rect x="3.5" y="3.5" width="17" height="17" rx="4.5" {...stroke} />
+          <Path d="M8 12.3l2.8 2.8L16.2 9.6" {...stroke} />
+        </>
+      )}
+      {name === 'box-x' && (
+        <>
+          <Rect x="3.5" y="3.5" width="17" height="17" rx="4.5" {...stroke} />
+          <Path d="M9 9l6 6M15 9l-6 6" {...stroke} />
+        </>
+      )}
+      {name === 'box-question' && (
+        <>
+          <Rect x="3.5" y="3.5" width="17" height="17" rx="4.5" {...stroke} />
+          <Path d="M9.8 9.6a2.3 2.3 0 0 1 4.4 .8c0 1.5-2.2 2.1-2.2 2.1" {...stroke} />
+          <Path d="M12 16.4h.01" {...stroke} />
         </>
       )}
       {name === 'pill' && (
