@@ -1,5 +1,3 @@
-import drugsData from '../../assets/drugs.json';
-
 /**
  * 식약처 "의약품개요정보(e약은요)" 자료를 앱에 담아 둔 것이다.
  *
@@ -20,19 +18,26 @@ export type DrugInfo = {
   usage: string;
   /** 사용 전 경고 */
   warning: string;
-  /** 주의사항 */
-  caution: string;
   /** 다른 약·음식과의 상호작용 */
   interaction: string;
-  /** 이상반응 */
-  sideEffect: string;
   /** 보관법 */
   storage: string;
   /** 자료 갱신일 (YYYY-MM-DD) */
   updated: string;
 };
 
-const DRUGS = drugsData as DrugInfo[];
+/**
+ * 자료가 4,700여 건이라 앱이 켜질 때 바로 읽지 않는다.
+ * 약 이름을 처음 검색하는 순간에만 읽어서, 알림 앱의 시작 속도를 건드리지 않는다.
+ */
+let cache: DrugInfo[] | null = null;
+
+function all(): DrugInfo[] {
+  if (!cache) {
+    cache = require('../../assets/drugs.json') as DrugInfo[];
+  }
+  return cache;
+}
 
 /** 자료 출처. 화면에 반드시 같이 보여 준다. */
 export const SOURCE_NAME = '식품의약품안전처 의약품개요정보(e약은요)';
@@ -45,7 +50,7 @@ export function officialUrl(seq: string): string {
 /** 자료 전체에서 가장 늦은 갱신일. "자료 기준일"로 보여 준다. */
 export function datasetUpdatedAt(): string {
   let latest = '';
-  for (const drug of DRUGS) {
+  for (const drug of all()) {
     if (drug.updated > latest) latest = drug.updated;
   }
   return latest;
@@ -66,7 +71,7 @@ export function searchDrugs(query: string, limit = 8): DrugInfo[] {
   const starts: DrugInfo[] = [];
   const contains: DrugInfo[] = [];
 
-  for (const drug of DRUGS) {
+  for (const drug of all()) {
     const name = normalize(drug.name);
     if (name.startsWith(q)) starts.push(drug);
     else if (name.includes(q)) contains.push(drug);
@@ -78,7 +83,7 @@ export function searchDrugs(query: string, limit = 8): DrugInfo[] {
 }
 
 export function getDrug(seq: string): DrugInfo | null {
-  return DRUGS.find((drug) => drug.seq === seq) ?? null;
+  return all().find((drug) => drug.seq === seq) ?? null;
 }
 
 /**

@@ -67,10 +67,18 @@ export default function DrugScreen() {
       <Field title="어떨 때 먹는 약인가요" body={drug.efficacy} />
       <Field title="어떻게 먹나요" body={drug.usage} />
       <Field title="먹기 전 경고" body={drug.warning} tone="warning" />
-      <Field title="주의사항" body={drug.caution} />
       <Field title="같이 먹으면 안 되는 것" body={drug.interaction} />
-      <Field title="생길 수 있는 이상반응" body={drug.sideEffect} />
       <Field title="보관법" body={drug.storage} />
+
+      <Notice
+        tone="info"
+        title="전체 주의사항과 이상반응"
+        body={
+          '전체 주의사항과 생길 수 있는 이상반응은 분량이 많고 수시로 바뀌어, ' +
+          '앱에 담아 두지 않고 식약처 원본으로 바로 연결합니다. ' +
+          '복용 전에 아래에서 확인하세요.'
+        }
+      />
 
       <View style={styles.source}>
         <Text style={styles.sourceText}>출처 · {SOURCE_NAME}</Text>
