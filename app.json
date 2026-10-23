@@ -2,7 +2,7 @@
   "expo": {
     "name": "또박",
     "slug": "ttobak",
-    "version": "1.0.0",
+    "version": "2.2.0",
     "orientation": "portrait",
     "scheme": "ttobak",
     "userInterfaceStyle": "light",
@@ -29,7 +29,10 @@
           "icon": "./assets/notification-icon.png",
           "color": "#388BFD",
           "sounds": [
-            "./assets/alarm.wav"
+            "./assets/alarm.wav",
+            "./assets/bell.wav",
+            "./assets/urgent.wav",
+            "./assets/drop.wav"
           ]
         }
       ],

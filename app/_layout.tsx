@@ -5,7 +5,6 @@ import { AppState } from 'react-native';
 
 import {
   configureNotificationHandler,
-  ensureNotificationChannel,
   requestNotificationPermission,
   syncSchedule,
 } from '../src/lib/notifications';
@@ -17,7 +16,6 @@ configureNotificationHandler();
 export default function RootLayout() {
   useEffect(() => {
     void (async () => {
-      await ensureNotificationChannel();
       await requestNotificationPermission();
       await syncSchedule();
     })();

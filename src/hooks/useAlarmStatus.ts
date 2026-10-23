@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import { Linking } from 'react-native';
 
 import {
+  EMPTY_SUMMARY,
   readPermissions,
   readScheduledDoses,
   requestExactAlarmPermission,
@@ -37,7 +38,7 @@ export type AlarmStatus = {
  */
 export function useAlarmStatus(): AlarmStatus {
   const [permissions, setPermissions] = useState<PermissionState | null>(null);
-  const [schedule, setSchedule] = useState<ScheduleSummary>({ count: 0, next: null });
+  const [schedule, setSchedule] = useState<ScheduleSummary>(EMPTY_SUMMARY);
   const [scheduledCount, setScheduledCount] = useState<number | null>(null);
   const [checkFailed, setCheckFailed] = useState(false);
 
@@ -49,9 +50,10 @@ export function useAlarmStatus(): AlarmStatus {
       ]);
       // 예약을 맞춘 뒤에 기기에 실제로 몇 개가 걸렸는지 되묻는다.
       const actual = await readScheduledDoses();
+      const actualDoses = actual.filter((dose) => dose.kind === 'dose');
       setPermissions(nextPermissions);
       setSchedule(nextSchedule);
-      setScheduledCount(actual.length);
+      setScheduledCount(actualDoses.length);
       setCheckFailed(false);
     } catch {
       // 확인에 실패하면 모른다고 표시한다. 허용된 것으로 가정하지 않는다.
