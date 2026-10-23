@@ -173,6 +173,7 @@ export default function AlarmsScreen() {
               first={index === 0}
               onPress={() => void handlePickSound(sound)}
               accessibilityLabel={`알림음 ${sound.label}`}
+              style={busy && sound.key !== settings.soundKey ? styles.dim : undefined}
               leading={<Radio selected={sound.key === settings.soundKey} />}
               trailing={
                 <Pressable
@@ -192,6 +193,7 @@ export default function AlarmsScreen() {
             </Row>
           ))}
         </View>
+        {busy && <Text style={styles.working}>예약된 알림을 새 소리로 다시 걸고 있습니다…</Text>}
         <Text style={styles.footnote}>
           알림음은 알람 소리로 울립니다. 폰이 무음이나 진동이어도 복용 알림은 소리가 납니다.
           {'\n'}들어보기를 누르면 {PREVIEW_DELAY_SECONDS}초 뒤에 실제 알림이 한 번 울립니다.
@@ -385,6 +387,8 @@ const styles = StyleSheet.create({
   choiceLabel: { ...type.body, color: colors.text },
   choiceHint: { ...type.caption, color: colors.textSecondary, marginTop: 2 },
 
+  dim: { opacity: 0.4 },
+
   radio: {
     width: 22,
     height: 22,
@@ -424,6 +428,7 @@ const styles = StyleSheet.create({
   permissionState: { ...type.caption, color: colors.textSecondary, marginTop: 2 },
   permissionOff: { color: colors.warning },
   footnote: { ...type.caption, color: colors.textSecondary, lineHeight: 19 },
+  working: { ...type.caption, color: colors.brand, fontWeight: '700' },
 
   actions: { gap: spacing.sm },
   empty: { ...type.body, color: colors.textSecondary },
