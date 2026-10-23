@@ -1,4 +1,4 @@
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -109,6 +109,16 @@ export default function HistoryScreen() {
     <View style={[styles.screen, { paddingTop: insets.top }]}>
       <View style={styles.header}>
         <Text style={styles.title}>복용 기록</Text>
+        <Pressable
+          onPress={() => router.push('/export')}
+          accessibilityRole="button"
+          accessibilityLabel="진료용으로 내보내기"
+          hitSlop={8}
+          style={({ pressed }) => [styles.exportButton, pressed && styles.exportPressed]}
+        >
+          <Icon name="share" size="md" color={colors.brand} />
+          <Text style={styles.exportLabel}>내보내기</Text>
+        </Pressable>
       </View>
 
       <ScrollView
@@ -337,8 +347,17 @@ function DoseRow({
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
-  header: { paddingHorizontal: gutter, paddingVertical: spacing.sm },
-  title: { ...type.display, color: colors.text, letterSpacing: -0.4 },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    paddingHorizontal: gutter,
+    paddingVertical: spacing.sm,
+  },
+  title: { ...type.display, color: colors.text, letterSpacing: -0.4, flex: 1 },
+  exportButton: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, padding: spacing.xs },
+  exportPressed: { opacity: 0.5 },
+  exportLabel: { ...type.caption, color: colors.brand, fontWeight: '700' },
   content: { paddingHorizontal: gutter, paddingTop: spacing.sm, gap: spacing.lg },
 
   monthBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },

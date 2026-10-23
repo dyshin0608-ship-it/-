@@ -26,7 +26,10 @@ export type IconName =
   | 'box-question'
   | 'home'
   | 'history'
-  | 'settings';
+  | 'settings'
+  | 'document'
+  | 'share'
+  | 'lock';
 
 type Props = {
   name: IconName;
@@ -67,6 +70,25 @@ export function Icon({ name, size = 'md', color = colors.text }: Props) {
         </>
       )}
       {name === 'chevron-right' && <Path d="M9 18l6-6-6-6" {...stroke} />}
+      {name === 'document' && (
+        <>
+          <Path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" {...stroke} />
+          <Path d="M14 3v5h5" {...stroke} />
+          <Path d="M9 13h6M9 17h4" {...stroke} />
+        </>
+      )}
+      {name === 'share' && (
+        <>
+          <Path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7" {...stroke} />
+          <Path d="M12 3v13M8 7l4-4 4 4" {...stroke} />
+        </>
+      )}
+      {name === 'lock' && (
+        <>
+          <Rect x="4" y="10" width="16" height="11" rx="2" {...stroke} />
+          <Path d="M8 10V7a4 4 0 0 1 8 0v3" {...stroke} />
+        </>
+      )}
       {name === 'clock' && (
         <>
           <Circle cx="12" cy="12" r="9" {...stroke} />

@@ -45,6 +45,7 @@ export default function RootLayout() {
         <Stack.Screen name="medication/new" options={{ title: '약 등록' }} />
         <Stack.Screen name="medication/[id]" options={{ title: '약 수정' }} />
         <Stack.Screen name="drug/[seq]" options={{ title: '약 정보' }} />
+        <Stack.Screen name="export" options={{ title: '기록 내보내기' }} />
       </Stack>
     </>
   );

@@ -2,7 +2,7 @@
   "expo": {
     "name": "또박",
     "slug": "ttobak",
-    "version": "2.2.0",
+    "version": "2.3.0",
     "orientation": "portrait",
     "scheme": "ttobak",
     "userInterfaceStyle": "light",
@@ -36,7 +36,9 @@
           ]
         }
       ],
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      "expo-sharing",
+      "expo-iap"
     ],
     "experiments": {
       "typedRoutes": true
