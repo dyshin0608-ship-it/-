@@ -61,12 +61,15 @@ src/
   theme.ts               색·여백·글자 크기
 tests/
   schedule.test.js       알림 예약 로직 테스트 (`npm test`)
+  store-check.js         스토어 문구 글자 수 확인 (`npm run store:check`)
 assets/
   alarm.wav bell.wav     알림음 4종
   urgent.wav drop.wav
   drugs.json             e약은요 자료 (4,719개 품목)
 app.json                 패키지명(com.ttobak.app), 아이콘, 알림음 등록, 플러그인
 eas.json                 EAS Build 프로필 (preview = 설치용 APK)
+STORE.md                 Play 스토어 등록 문구 · 개인정보처리방침 · 올리기 전 점검
+TESTING.md               실기기 테스트 절차
 ```
 
 ### 저장되는 데이터
@@ -211,6 +214,9 @@ npm start           # Expo Dev Server
 npm run typecheck   # 타입 체크
 npm test            # 알림 예약 로직 테스트
 ```
+
+`npm run store:check`는 [STORE.md](./STORE.md)의 스토어 등록 문구가 Play Console
+글자 수 제한에 맞는지 봅니다.
 
 `npm test`는 기기 없이 확인할 수 있는 순수 로직만 돌립니다 — 날짜 계산, 예약 목록 생성,
 재알림이 사라지지 않는지, 기기에 걸린 알림과의 비교. `expo-notifications`를 실제로
