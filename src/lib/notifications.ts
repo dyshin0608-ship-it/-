@@ -6,6 +6,7 @@ import type { DateString, TimeString } from './types';
 import {
   buildOccurrences,
   diffSchedule,
+  followupNotificationId,
   mergeOccurrences,
   parseDoseNotificationId,
   type DoseKind,
@@ -250,6 +251,25 @@ async function scheduleDose(
       delivery: 'alarmClock',
     },
   });
+}
+
+/**
+ * 이미 울려서 알림창에 남아 있는 알림을 치운다.
+ *
+ * 예약 취소(cancel)는 **아직 울리지 않은** 알림만 거둔다. 이미 울린 알림은
+ * 알림창에 그대로 남아서 "복용 시간입니다"라고 계속 떠 있다. 먹었다고 체크한
+ * 사람에게는 그게 알림이 안 꺼진 것으로 보인다.
+ *
+ * 정시 알림과 재알림을 둘 다 치운다.
+ */
+export async function dismissDoseNotifications(doseId: string): Promise<void> {
+  for (const identifier of [doseId, followupNotificationId(doseId)]) {
+    try {
+      await Notifications.dismissNotificationAsync(identifier);
+    } catch {
+      // 알림창에 없는 알림을 치우려 한 것뿐이다.
+    }
+  }
 }
 
 /** 기기에 실제로 걸려 있는 복용 알림. 예약 상태를 눈으로 확인할 때 쓴다. */

@@ -21,7 +21,7 @@ import {
   type DoseRecords,
   type DoseStatus,
 } from '../../src/lib/doses';
-import { syncSchedule } from '../../src/lib/notifications';
+import { dismissDoseNotifications, syncSchedule } from '../../src/lib/notifications';
 import { dosesForDate, type DayDose } from '../../src/lib/schedule';
 import { getMedications } from '../../src/lib/storage';
 import type { DateString, Medication } from '../../src/lib/types';
@@ -86,6 +86,7 @@ export default function HistoryScreen() {
       return next;
     });
     await setDoseStatus(key, status);
+    if (status !== null) await dismissDoseNotifications(key);
     await syncSchedule();
   }
 

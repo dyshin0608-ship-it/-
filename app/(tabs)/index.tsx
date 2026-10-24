@@ -24,7 +24,7 @@ import {
   formatTime,
   today,
 } from '../../src/lib/date';
-import { syncSchedule } from '../../src/lib/notifications';
+import { dismissDoseNotifications, syncSchedule } from '../../src/lib/notifications';
 import { dosesForDate, type DayDose, type DoseOccurrence } from '../../src/lib/schedule';
 import { getMedications } from '../../src/lib/storage';
 import type { Medication } from '../../src/lib/types';
@@ -60,6 +60,8 @@ export default function HomeScreen() {
       return next;
     });
     await setDoseStatus(key, status);
+    // 이미 울린 알림은 예약 취소로 사라지지 않는다. 알림창에서도 치워야 한다.
+    if (status !== null) await dismissDoseNotifications(key);
     await syncSchedule();
     await alarm.refresh();
   }
