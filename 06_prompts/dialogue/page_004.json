@@ -1,0 +1,229 @@
+{
+  "page": 4,
+  "canvas": [
+    1536,
+    2304
+  ],
+  "seed": 7004,
+  "_note": "scaffold.py 자동 배치 초안. box/tail_to 를 눈으로 보고 다듬을 것.",
+  "bubbles": [
+    {
+      "id": "p004-b01",
+      "panel": 1,
+      "speaker": "안나",
+      "type": "normal",
+      "lines": [
+        "제가… 그 숲에 다시는",
+        "가지 않겠다고 한 것도…",
+        "그 때문이에요."
+      ],
+      "box": [
+        179,
+        190,
+        348,
+        143
+      ],
+      "tail_to": [
+        413,
+        438
+      ],
+      "font_size": 34,
+      "align": "left"
+    },
+    {
+      "id": "p004-b02",
+      "panel": 2,
+      "speaker": "마리",
+      "type": "soft",
+      "lines": [
+        "……그렇군요."
+      ],
+      "box": [
+        153,
+        568,
+        178,
+        42
+      ],
+      "tail_to": [
+        242,
+        444
+      ],
+      "font_size": 30,
+      "align": "center"
+    },
+    {
+      "id": "p004-b03",
+      "panel": 4,
+      "speaker": "안나",
+      "type": "normal",
+      "lines": [
+        "무섭지만… 그림으로는",
+        "계속 그리고 싶다…",
+        "그런 거죠?"
+      ],
+      "box": [
+        176,
+        783,
+        329,
+        143
+      ],
+      "tail_to": [
+        401,
+        1044
+      ],
+      "font_size": 34,
+      "align": "left"
+    },
+    {
+      "id": "p004-b04",
+      "panel": 4,
+      "speaker": "마리",
+      "type": "off",
+      "lines": [
+        "…네."
+      ],
+      "box": [
+        621,
+        869,
+        74,
+        47
+      ],
+      "tail_to": [
+        804,
+        917
+      ],
+      "font_size": 34,
+      "align": "center"
+    },
+    {
+      "id": "p004-b05",
+      "panel": 4,
+      "speaker": "안나",
+      "type": "normal",
+      "lines": [
+        "이상하죠?"
+      ],
+      "box": [
+        149,
+        969,
+        146,
+        47
+      ],
+      "tail_to": [
+        282,
+        1044
+      ],
+      "font_size": 34,
+      "align": "center"
+    },
+    {
+      "id": "p004-b06",
+      "panel": 5,
+      "speaker": "마리",
+      "type": "normal",
+      "lines": [
+        "전혀요."
+      ],
+      "box": [
+        856,
+        787,
+        106,
+        46
+      ],
+      "tail_to": [
+        969,
+        950
+      ],
+      "font_size": 34,
+      "align": "center"
+    },
+    {
+      "id": "p004-b07",
+      "panel": 5,
+      "speaker": "마리",
+      "type": "normal",
+      "lines": [
+        "두려운 대상일수록 더 알고 싶고…",
+        "더 그리고 싶어지거든요."
+      ],
+      "box": [
+        915,
+        924,
+        428,
+        87
+      ],
+      "tail_to": [
+        1069,
+        1044
+      ],
+      "font_size": 30,
+      "align": "left"
+    },
+    {
+      "id": "p004-b08",
+      "panel": 6,
+      "speaker": "안나",
+      "type": "normal",
+      "lines": [
+        "언젠가 괜찮아질 때가 오면…",
+        "저도 같이 가요."
+      ],
+      "box": [
+        189,
+        1198,
+        412,
+        95
+      ],
+      "tail_to": [
+        455,
+        1417
+      ],
+      "font_size": 34,
+      "align": "left"
+    },
+    {
+      "id": "p004-b09",
+      "panel": 6,
+      "speaker": "마리",
+      "type": "soft",
+      "lines": [
+        "…같이요?"
+      ],
+      "box": [
+        1260,
+        1545,
+        129,
+        40
+      ],
+      "tail_to": [
+        1265,
+        1702
+      ],
+      "font_size": 30,
+      "align": "center"
+    },
+    {
+      "id": "p004-b10",
+      "panel": 7,
+      "speaker": "안나",
+      "type": "normal",
+      "lines": [
+        "네. 그때는 이번에",
+        "제가 용기를 낼 테니까."
+      ],
+      "box": [
+        176,
+        1945,
+        326,
+        95
+      ],
+      "tail_to": [
+        399,
+        2164
+      ],
+      "font_size": 34,
+      "align": "left"
+    }
+  ],
+  "captions": []
+}

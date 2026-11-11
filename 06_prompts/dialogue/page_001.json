@@ -1,0 +1,64 @@
+{
+  "page": 1,
+  "canvas": [1536, 2304],
+  "seed": 7001,
+  "_note": "box = 텍스트 블록 [x,y,w,h]. 말풍선은 여기서 패딩만큼 자동 팽창한다. tail_to = 화자의 입/얼굴 좌표(컷 밖이면 컷 경계 밖).",
+  "bubbles": [
+    {
+      "id": "p001-b01", "panel": 5, "speaker": "안나", "type": "normal",
+      "lines": ["마리 수녀님,", "이 풀 이름이 뭐라고요?"],
+      "box": [208, 1391, 442, 99], "tail_to": [760, 1560],
+      "font_size": 34, "align": "left"
+    },
+    {
+      "id": "p001-b02", "panel": 5, "speaker": "마리", "type": "off",
+      "lines": ["거기 적어뒀는데요."],
+      "box": [1003, 1400, 340, 49], "tail_to": [1500, 1470],
+      "font_size": 34, "align": "center"
+    },
+    {
+      "id": "p001-b03", "panel": 5, "speaker": "안나", "type": "normal",
+      "lines": ["네. 그걸 읽고 있는데요."],
+      "box": [886, 1520, 442, 49], "tail_to": [800, 1620],
+      "font_size": 34, "align": "center"
+    },
+    {
+      "id": "p001-b04", "panel": 6, "speaker": "안나", "type": "off",
+      "lines": ["이 두 글자,", "같은 글자예요?"],
+      "box": [267, 1714, 210, 87], "tail_to": [360, 1925],
+      "font_size": 30, "align": "left"
+    },
+    {
+      "id": "p001-b05", "panel": 7, "speaker": "마리", "type": "normal",
+      "lines": ["네. 둘 다 '뿌리'요."],
+      "box": [819, 1710, 330, 44], "tail_to": [1150, 1850],
+      "font_size": 30, "align": "center"
+    },
+    {
+      "id": "p001-b06", "panel": 7, "speaker": "안나", "type": "off",
+      "lines": ["하나는 '뿔'", "같은데요."],
+      "box": [1153, 1775, 210, 87], "tail_to": [1440, 1925],
+      "font_size": 30, "align": "left"
+    },
+    {
+      "id": "p001-b07", "panel": 8, "speaker": "마리", "type": "normal",
+      "lines": ["손이 시려서요."],
+      "box": [180, 1975, 256, 46], "tail_to": [330, 2130],
+      "font_size": 32, "align": "center"
+    },
+    {
+      "id": "p001-b08", "panel": 9, "speaker": "안나", "type": "normal",
+      "lines": ["오늘 안 춥잖아요."],
+      "box": [689, 1975, 340, 49], "tail_to": [780, 2120],
+      "font_size": 34, "align": "center"
+    },
+    {
+      "id": "p001-b09", "panel": 9, "speaker": "마리", "type": "normal",
+      "lines": ["어제 쓴 거예요."],
+      "box": [1042, 2090, 306, 49], "tail_to": [1260, 2200],
+      "font_size": 34, "align": "center"
+    }
+  ],
+  "captions": [],
+  "sfx": []
+}

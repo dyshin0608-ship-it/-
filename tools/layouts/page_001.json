@@ -1,0 +1,18 @@
+{
+  "page": 1,
+  "canvas": [1536, 2304],
+  "seed": 20261111,
+  "panel_root": "03_panels",
+  "_note": "p001 — 필경실 아침. 9컷. panel 06이 대사 3개를 담기엔 좁아 06/06b로 분할함.",
+  "panels": [
+    {"image": "page_001_panel_01.png", "box": [72, 72, 1392, 260],  "border": "hand", "anchor": "center", "_shot": "ELS+HIGH 필경실 전경"},
+    {"image": "page_001_panel_02.png", "box": [72, 360, 400, 290],  "border": "hand", "anchor": "center", "_shot": "INS 책상 정물"},
+    {"image": "page_001_panel_03.png", "box": [500, 360, 964, 290], "border": "hand", "anchor": "center", "_shot": "OTS 마리"},
+    {"image": "page_001_panel_04.png", "box": [72, 678, 1392, 640], "border": "hand", "border_width": 3.4, "anchor": "center", "_shot": "XL FS 쑥부쟁이 도해 (다섯 장)"},
+    {"image": "page_001_panel_05.png", "box": [72, 1346, 1392, 300], "border": "hand", "anchor": "center", "_shot": "BS 안나"},
+    {"image": "page_001_panel_06.png", "box": [72, 1674, 600, 230], "border": "hand", "anchor": "center", "_shot": "INS+CU 메모 두 글자"},
+    {"image": "page_001_panel_06b.png", "box": [700, 1674, 764, 230], "border": "hand", "anchor": "center", "_shot": "CU 마리 반응"},
+    {"image": "page_001_panel_07.png", "box": [72, 1932, 468, 300], "border": "hand", "anchor": "center", "_shot": "CU 마리의 손 (잉크 자국)"},
+    {"image": "page_001_panel_08.png", "box": [568, 1932, 896, 300], "border": "hand", "anchor": "center", "_shot": "MS 2인"}
+  ]
+}

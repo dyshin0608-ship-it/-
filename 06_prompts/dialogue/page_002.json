@@ -1,0 +1,222 @@
+{
+  "page": 2,
+  "canvas": [
+    1536,
+    2304
+  ],
+  "seed": 7002,
+  "_note": "scaffold.py 자동 배치 초안. box/tail_to 를 눈으로 보고 다듬을 것.",
+  "bubbles": [
+    {
+      "id": "p002-b01",
+      "panel": 3,
+      "speaker": "베르타",
+      "type": "normal",
+      "lines": [
+        "이게 뭐냐."
+      ],
+      "box": [
+        149,
+        466,
+        148,
+        47
+      ],
+      "tail_to": [
+        283,
+        630
+      ],
+      "font_size": 34,
+      "align": "center"
+    },
+    {
+      "id": "p002-b02",
+      "panel": 3,
+      "speaker": "마리",
+      "type": "off",
+      "lines": [
+        "쑥부쟁이요."
+      ],
+      "box": [
+        381,
+        746,
+        170,
+        47
+      ],
+      "tail_to": [
+        674,
+        794
+      ],
+      "font_size": 34,
+      "align": "center"
+    },
+    {
+      "id": "p002-b03",
+      "panel": 5,
+      "speaker": "베르타",
+      "type": "off",
+      "lines": [
+        "이 책은 백 년 전 거다."
+      ],
+      "box": [
+        758,
+        588,
+        314,
+        47
+      ],
+      "tail_to": [
+        915,
+        512
+      ],
+      "font_size": 34,
+      "align": "center"
+    },
+    {
+      "id": "p002-b04",
+      "panel": 5,
+      "speaker": "베르타",
+      "type": "off",
+      "lines": [
+        "이걸 그린 사람도",
+        "누군가를 베꼈겠지."
+      ],
+      "box": [
+        1092,
+        681,
+        275,
+        95
+      ],
+      "tail_to": [
+        1229,
+        512
+      ],
+      "font_size": 34,
+      "align": "left"
+    },
+    {
+      "id": "p002-b05",
+      "panel": 5,
+      "speaker": "베르타",
+      "type": "off",
+      "lines": [
+        "그 사람도 또",
+        "누군가를 베꼈을 테고."
+      ],
+      "box": [
+        759,
+        766,
+        317,
+        95
+      ],
+      "tail_to": [
+        917,
+        512
+      ],
+      "font_size": 34,
+      "align": "left"
+    },
+    {
+      "id": "p002-b06",
+      "panel": 6,
+      "speaker": "베르타",
+      "type": "off",
+      "lines": [
+        "실제 쑥부쟁이는",
+        "그렇지 않아."
+      ],
+      "box": [
+        162,
+        986,
+        233,
+        95
+      ],
+      "tail_to": [
+        30,
+        1057
+      ],
+      "font_size": 34,
+      "align": "left"
+    },
+    {
+      "id": "p002-b07",
+      "panel": 6,
+      "speaker": "마리",
+      "type": "normal",
+      "lines": [
+        "…그럼 몇 장인데요?"
+      ],
+      "box": [
+        1071,
+        1099,
+        293,
+        47
+      ],
+      "tail_to": [
+        1158,
+        1174
+      ],
+      "font_size": 34,
+      "align": "center"
+    },
+    {
+      "id": "p002-b08",
+      "panel": 7,
+      "speaker": "베르타",
+      "type": "normal",
+      "lines": [
+        "나도 모른다."
+      ],
+      "box": [
+        154,
+        1367,
+        180,
+        46
+      ],
+      "tail_to": [
+        304,
+        1530
+      ],
+      "font_size": 34,
+      "align": "center"
+    },
+    {
+      "id": "p002-b09",
+      "panel": 7,
+      "speaker": "베르타",
+      "type": "emphasis",
+      "lines": [
+        "틀린 그림을 보고 틀린 풀을 캐면,",
+        "사람이 죽어."
+      ],
+      "box": [
+        831,
+        1690,
+        501,
+        101
+      ],
+      "tail_to": [
+        1022,
+        1902
+      ],
+      "font_size": 36,
+      "align": "left"
+    },
+    {
+      "id": "p002-s01",
+      "panel": 1,
+      "speaker": "SFX",
+      "type": "sfx",
+      "lines": [
+        "철컹"
+      ],
+      "box": [
+        106,
+        96,
+        102,
+        60
+      ],
+      "font_size": 54,
+      "align": "left"
+    }
+  ],
+  "captions": []
+}

@@ -1,0 +1,141 @@
+{
+  "page": 5,
+  "canvas": [
+    1536,
+    2304
+  ],
+  "seed": 7005,
+  "_note": "scaffold.py 자동 배치 초안. box/tail_to 를 눈으로 보고 다듬을 것.",
+  "bubbles": [
+    {
+      "id": "p005-b01",
+      "panel": 1,
+      "speaker": "마리",
+      "type": "off",
+      "lines": [
+        "숲이… 생각보다 조용하네요."
+      ],
+      "box": [
+        189,
+        248,
+        413,
+        47
+      ],
+      "tail_to": [
+        396,
+        508
+      ],
+      "font_size": 34,
+      "align": "center"
+    },
+    {
+      "id": "p005-b02",
+      "panel": 2,
+      "speaker": "안나",
+      "type": "normal",
+      "lines": [
+        "조용한 게 더",
+        "무서울 때도 있어요."
+      ],
+      "box": [
+        170,
+        602,
+        285,
+        95
+      ],
+      "tail_to": [
+        372,
+        786
+      ],
+      "font_size": 34,
+      "align": "left"
+    },
+    {
+      "id": "p005-b03",
+      "panel": 4,
+      "speaker": "마리",
+      "type": "normal",
+      "lines": [
+        "안나 수녀님, 보세요."
+      ],
+      "box": [
+        171,
+        869,
+        295,
+        49
+      ],
+      "tail_to": [
+        379,
+        1035
+      ],
+      "font_size": 34,
+      "align": "center"
+    },
+    {
+      "id": "p005-b04",
+      "panel": 4,
+      "speaker": "마리",
+      "type": "normal",
+      "lines": [
+        "이게 진짜 쑥부쟁이예요."
+      ],
+      "box": [
+        1006,
+        979,
+        349,
+        47
+      ],
+      "tail_to": [
+        1121,
+        1054
+      ],
+      "font_size": 34,
+      "align": "center"
+    },
+    {
+      "id": "p005-b05",
+      "panel": 6,
+      "speaker": "안나",
+      "type": "normal",
+      "lines": [
+        "정말이네요…",
+        "도감 그림이랑은 전혀 달라요."
+      ],
+      "box": [
+        179,
+        1841,
+        348,
+        78
+      ],
+      "tail_to": [
+        413,
+        2041
+      ],
+      "font_size": 28,
+      "align": "left"
+    },
+    {
+      "id": "p005-b06",
+      "panel": 6,
+      "speaker": "마리",
+      "type": "off",
+      "lines": [
+        "이렇게 직접 봐야만",
+        "알 수 있군요."
+      ],
+      "box": [
+        260,
+        2067,
+        275,
+        95
+      ],
+      "tail_to": [
+        674,
+        2139
+      ],
+      "font_size": 34,
+      "align": "left"
+    }
+  ],
+  "captions": []
+}

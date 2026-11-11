@@ -1,0 +1,89 @@
+{
+  "page": 4,
+  "canvas": [
+    1536,
+    2304
+  ],
+  "seed": 20261115,
+  "panel_root": "03_panels",
+  "_note": "p004 — tools/scaffold.py 생성. 좌표 수정 시 이 파일을 직접 편집.",
+  "panels": [
+    {
+      "image": "page_004_panel_01.png",
+      "box": [
+        72,
+        72,
+        1392,
+        380
+      ],
+      "border": "hand",
+      "anchor": "center"
+    },
+    {
+      "image": "page_004_panel_02.png",
+      "box": [
+        72,
+        480,
+        684,
+        220
+      ],
+      "border": "hand",
+      "anchor": "center"
+    },
+    {
+      "image": "page_004_panel_03.png",
+      "box": [
+        780,
+        480,
+        684,
+        220
+      ],
+      "border": "hand",
+      "anchor": "center"
+    },
+    {
+      "image": "page_004_panel_04.png",
+      "box": [
+        72,
+        728,
+        690,
+        330
+      ],
+      "border": "hand",
+      "anchor": "center"
+    },
+    {
+      "image": "page_004_panel_05.png",
+      "box": [
+        786,
+        728,
+        678,
+        330
+      ],
+      "border": "hand",
+      "anchor": "center"
+    },
+    {
+      "image": "page_004_panel_06.png",
+      "box": [
+        72,
+        1086,
+        1392,
+        640
+      ],
+      "border": "hand",
+      "anchor": "center"
+    },
+    {
+      "image": "page_004_panel_07.png",
+      "box": [
+        72,
+        1754,
+        1392,
+        478
+      ],
+      "border": "hand",
+      "anchor": "center"
+    }
+  ]
+}

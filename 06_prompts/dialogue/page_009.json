@@ -1,0 +1,162 @@
+{
+  "page": 9,
+  "canvas": [
+    1536,
+    2304
+  ],
+  "seed": 7009,
+  "_note": "scaffold.py 자동 배치 초안. box/tail_to 를 눈으로 보고 다듬을 것.",
+  "bubbles": [
+    {
+      "id": "p009-b01",
+      "panel": 1,
+      "speaker": "소년",
+      "type": "normal",
+      "lines": [
+        "이거 맞죠?",
+        "수도원 책 보고 캤어요."
+      ],
+      "box": [
+        176,
+        174,
+        326,
+        95
+      ],
+      "tail_to": [
+        399,
+        358
+      ],
+      "font_size": 34,
+      "align": "left"
+    },
+    {
+      "id": "p009-b02",
+      "panel": 3,
+      "speaker": "에스텔",
+      "type": "off",
+      "lines": [
+        "아니. 이건 아니야."
+      ],
+      "box": [
+        166,
+        440,
+        263,
+        47
+      ],
+      "tail_to": [
+        298,
+        364
+      ],
+      "font_size": 34,
+      "align": "center"
+    },
+    {
+      "id": "p009-b03",
+      "panel": 3,
+      "speaker": "마리",
+      "type": "off",
+      "lines": [
+        "왜요?"
+      ],
+      "box": [
+        1314,
+        513,
+        82,
+        46
+      ],
+      "tail_to": [
+        1355,
+        636
+      ],
+      "font_size": 34,
+      "align": "center"
+    },
+    {
+      "id": "p009-b04",
+      "panel": 4,
+      "speaker": "에스텔",
+      "type": "normal",
+      "lines": [
+        "비슷해 보여도 달라."
+      ],
+      "box": [
+        170,
+        764,
+        285,
+        47
+      ],
+      "tail_to": [
+        312,
+        1304
+      ],
+      "font_size": 34,
+      "align": "center"
+    },
+    {
+      "id": "p009-b05",
+      "panel": 4,
+      "speaker": "에스텔",
+      "type": "normal",
+      "lines": [
+        "이걸 달여 먹이면 열은 못 잡고,",
+        "속부터 망가질 수도 있어."
+      ],
+      "box": [
+        900,
+        1058,
+        441,
+        98
+      ],
+      "tail_to": [
+        1121,
+        1304
+      ],
+      "font_size": 34,
+      "align": "left"
+    },
+    {
+      "id": "p009-b06",
+      "panel": 7,
+      "speaker": "안나",
+      "type": "normal",
+      "lines": [
+        "…정말 죽을 수도 있는 거네요."
+      ],
+      "box": [
+        181,
+        1927,
+        356,
+        40
+      ],
+      "tail_to": [
+        419,
+        2084
+      ],
+      "font_size": 28,
+      "align": "center"
+    },
+    {
+      "id": "p009-b07",
+      "panel": 8,
+      "speaker": "에스텔",
+      "type": "normal",
+      "lines": [
+        "그래서 보는 법을",
+        "잘못 배우면 안 되는 거야."
+      ],
+      "box": [
+        766,
+        1900,
+        368,
+        95
+      ],
+      "tail_to": [
+        1010,
+        2119
+      ],
+      "font_size": 34,
+      "align": "left"
+    }
+  ],
+  "captions": []
+}

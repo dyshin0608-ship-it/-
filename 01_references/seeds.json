@@ -1,0 +1,24 @@
+{
+  "_note": "캐릭터 시트를 확정하면 seed 와 locked 를 채운다. locked:true 이후에는 시트를 재생성하지 않는다.",
+  "engine": {
+    "checkpoint": null,
+    "checkpoint_hash": null,
+    "vae": "sdxl_vae.safetensors",
+    "sampler": "dpmpp_2m_sde",
+    "scheduler": "karras",
+    "steps": 32,
+    "cfg": 6.0,
+    "clip_skip": 2,
+    "locked": false
+  },
+  "style_anchor": {"seed": null, "files": ["style_anchor_01.png", "style_anchor_02.png", "style_anchor_03.png", "style_anchor_04.png", "style_anchor_05.png", "style_anchor_06.png"], "locked": false},
+  "characters": {
+    "marie":   {"seed": null, "sheet": "marie_sheet.png",   "face_ref": "marie_face_ref.png",   "ipa_weight": 0.75, "locked": false},
+    "anna":    {"seed": null, "sheet": "anna_sheet.png",    "face_ref": "anna_face_ref.png",    "body_sheet": "anna_body_01.png", "ipa_weight": 0.80, "locked": false},
+    "estelle": {"seed": null, "sheet": "estelle_sheet.png", "face_ref": "estelle_face_ref.png", "pose_sheet": "estelle_pose_01.png", "ipa_weight": 0.75, "locked": false},
+    "berta":   {"seed": null, "sheet": "berta_sheet.png",   "face_ref": "berta_face_ref.png",   "ipa_weight": 0.70, "locked": false},
+    "else":    {"seed": null, "sheet": "else_sheet.png",    "face_ref": "else_face_ref.png",    "ipa_weight": 0.65, "locked": false},
+    "boy":     {"seed": null, "sheet": "boy_sheet.png",     "face_ref": "boy_face_ref.png",     "ipa_weight": 0.65, "locked": false}
+  },
+  "shared": {"height_chart": "height_chart.png", "props": "props_sheet.png"}
+}

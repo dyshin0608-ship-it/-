@@ -1,0 +1,244 @@
+{
+  "page": 3,
+  "canvas": [
+    1536,
+    2304
+  ],
+  "seed": 7003,
+  "_note": "scaffold.py 자동 배치 초안. box/tail_to 를 눈으로 보고 다듬을 것.",
+  "bubbles": [
+    {
+      "id": "p003-b01",
+      "panel": 2,
+      "speaker": "마리",
+      "type": "off",
+      "lines": [
+        "쑥부쟁이 있어요?"
+      ],
+      "box": [
+        165,
+        808,
+        252,
+        47
+      ],
+      "tail_to": [
+        30,
+        856
+      ],
+      "font_size": 34,
+      "align": "center"
+    },
+    {
+      "id": "p003-b02",
+      "panel": 2,
+      "speaker": "엘제",
+      "type": "normal",
+      "lines": [
+        "마른 것밖에 없다."
+      ],
+      "box": [
+        1117,
+        837,
+        253,
+        47
+      ],
+      "tail_to": [
+        1184,
+        1002
+      ],
+      "font_size": 34,
+      "align": "center"
+    },
+    {
+      "id": "p003-b03",
+      "panel": 2,
+      "speaker": "마리",
+      "type": "off",
+      "lines": [
+        "꽃은요?"
+      ],
+      "box": [
+        144,
+        901,
+        114,
+        46
+      ],
+      "tail_to": [
+        30,
+        948
+      ],
+      "font_size": 34,
+      "align": "center"
+    },
+    {
+      "id": "p003-b04",
+      "panel": 2,
+      "speaker": "엘제",
+      "type": "normal",
+      "lines": [
+        "떨어졌지."
+      ],
+      "box": [
+        1250,
+        929,
+        138,
+        47
+      ],
+      "tail_to": [
+        1259,
+        1004
+      ],
+      "font_size": 34,
+      "align": "center"
+    },
+    {
+      "id": "p003-b05",
+      "panel": 5,
+      "speaker": "마리",
+      "type": "normal",
+      "lines": [
+        "살아 있는 건 어디 있어요?"
+      ],
+      "box": [
+        184,
+        1544,
+        376,
+        47
+      ],
+      "tail_to": [
+        432,
+        1709
+      ],
+      "font_size": 34,
+      "align": "center"
+    },
+    {
+      "id": "p003-b06",
+      "panel": 5,
+      "speaker": "엘제",
+      "type": "off",
+      "lines": [
+        "동쪽 숲."
+      ],
+      "box": [
+        573,
+        1640,
+        116,
+        47
+      ],
+      "tail_to": [
+        30,
+        1688
+      ],
+      "font_size": 34,
+      "align": "center"
+    },
+    {
+      "id": "p003-b07",
+      "panel": 5,
+      "speaker": "마리",
+      "type": "normal",
+      "lines": [
+        "안나 수녀님,",
+        "숲에 가봤어요?"
+      ],
+      "box": [
+        160,
+        1676,
+        220,
+        98
+      ],
+      "tail_to": [
+        330,
+        1810
+      ],
+      "font_size": 34,
+      "align": "left"
+    },
+    {
+      "id": "p003-b08",
+      "panel": 6,
+      "speaker": "안나",
+      "type": "normal",
+      "lines": [
+        "아뇨."
+      ],
+      "box": [
+        852,
+        1544,
+        74,
+        46
+      ],
+      "tail_to": [
+        949,
+        1707
+      ],
+      "font_size": 34,
+      "align": "center"
+    },
+    {
+      "id": "p003-b09",
+      "panel": 6,
+      "speaker": "마리",
+      "type": "off",
+      "lines": [
+        "무서워요?"
+      ],
+      "box": [
+        1240,
+        1640,
+        146,
+        47
+      ],
+      "tail_to": [
+        1313,
+        1468
+      ],
+      "font_size": 34,
+      "align": "center"
+    },
+    {
+      "id": "p003-b10",
+      "panel": 6,
+      "speaker": "안나",
+      "type": "soft",
+      "lines": [
+        "…네."
+      ],
+      "box": [
+        850,
+        1743,
+        66,
+        40
+      ],
+      "tail_to": [
+        943,
+        1810
+      ],
+      "font_size": 30,
+      "align": "center"
+    },
+    {
+      "id": "p003-b11",
+      "panel": 7,
+      "speaker": "마리",
+      "type": "normal",
+      "lines": [
+        "그럼 혼자 가진 않을게요."
+      ],
+      "box": [
+        181,
+        2018,
+        358,
+        47
+      ],
+      "tail_to": [
+        420,
+        2182
+      ],
+      "font_size": 34,
+      "align": "center"
+    }
+  ],
+  "captions": []
+}

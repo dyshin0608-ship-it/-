@@ -1,0 +1,164 @@
+{
+  "page": 7,
+  "canvas": [
+    1536,
+    2304
+  ],
+  "seed": 7007,
+  "_note": "scaffold.py 자동 배치 초안. box/tail_to 를 눈으로 보고 다듬을 것.",
+  "bubbles": [
+    {
+      "id": "p007-b01",
+      "panel": 1,
+      "speaker": "에스텔",
+      "type": "normal",
+      "lines": [
+        "그거, 한 송이처럼 보여도",
+        "진짜로는 작은 꽃들이 모인 거야."
+      ],
+      "box": [
+        197,
+        152,
+        464,
+        98
+      ],
+      "tail_to": [
+        489,
+        318
+      ],
+      "font_size": 34,
+      "align": "left"
+    },
+    {
+      "id": "p007-b02",
+      "panel": 2,
+      "speaker": "에스텔",
+      "type": "off",
+      "lines": [
+        "책 그림은",
+        "겉모양만 흉내 내기 쉬워."
+      ],
+      "box": [
+        181,
+        692,
+        358,
+        95
+      ],
+      "tail_to": [
+        1114,
+        764
+      ],
+      "font_size": 34,
+      "align": "left"
+    },
+    {
+      "id": "p007-b03",
+      "panel": 4,
+      "speaker": "에스텔",
+      "type": "normal",
+      "lines": [
+        "살아 있는 걸 보지 않으면,"
+      ],
+      "box": [
+        182,
+        1189,
+        368,
+        49
+      ],
+      "tail_to": [
+        426,
+        1355
+      ],
+      "font_size": 34,
+      "align": "center"
+    },
+    {
+      "id": "p007-b04",
+      "panel": 4,
+      "speaker": "에스텔",
+      "type": "normal",
+      "lines": [
+        "어디가 몸통이고",
+        "어디가 가장자리인지 놓치게 되지."
+      ],
+      "box": [
+        849,
+        1254,
+        486,
+        95
+      ],
+      "tail_to": [
+        1032,
+        1384
+      ],
+      "font_size": 34,
+      "align": "left"
+    },
+    {
+      "id": "p007-b05",
+      "panel": 6,
+      "speaker": "마리",
+      "type": "off",
+      "lines": [
+        "…그래서 직접 보라고",
+        "하신 거군요."
+      ],
+      "box": [
+        1037,
+        1578,
+        307,
+        95
+      ],
+      "tail_to": [
+        1191,
+        1390
+      ],
+      "font_size": 34,
+      "align": "left"
+    },
+    {
+      "id": "p007-b06",
+      "panel": 7,
+      "speaker": "에스텔",
+      "type": "normal",
+      "lines": [
+        "응."
+      ],
+      "box": [
+        133,
+        1921,
+        42,
+        44
+      ],
+      "tail_to": [
+        214,
+        2082
+      ],
+      "font_size": 34,
+      "align": "center"
+    },
+    {
+      "id": "p007-b07",
+      "panel": 7,
+      "speaker": "에스텔",
+      "type": "normal",
+      "lines": [
+        "그림은 눈으로 시작하지만,",
+        "약은 손으로도 배워야 하니까."
+      ],
+      "box": [
+        220,
+        2064,
+        422,
+        98
+      ],
+      "tail_to": [
+        371,
+        2198
+      ],
+      "font_size": 34,
+      "align": "left"
+    }
+  ],
+  "captions": []
+}

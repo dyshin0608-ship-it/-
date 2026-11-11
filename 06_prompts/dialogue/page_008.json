@@ -1,0 +1,92 @@
+{
+  "page": 8,
+  "canvas": [
+    1536,
+    2304
+  ],
+  "seed": 7008,
+  "_note": "scaffold.py 자동 배치 초안. box/tail_to 를 눈으로 보고 다듬을 것.",
+  "bubbles": [
+    {
+      "id": "p008-b01",
+      "panel": 5,
+      "speaker": "소년",
+      "type": "soft",
+      "lines": [
+        "저… 약초 가져왔어요."
+      ],
+      "box": [
+        169,
+        688,
+        280,
+        43
+      ],
+      "tail_to": [
+        369,
+        847
+      ],
+      "font_size": 30,
+      "align": "center"
+    },
+    {
+      "id": "p008-b02",
+      "panel": 6,
+      "speaker": "에스텔",
+      "type": "normal",
+      "lines": [
+        "누가 시켰지?"
+      ],
+      "box": [
+        155,
+        1320,
+        188,
+        47
+      ],
+      "tail_to": [
+        309,
+        1484
+      ],
+      "font_size": 34,
+      "align": "center"
+    },
+    {
+      "id": "p008-b03",
+      "panel": 6,
+      "speaker": "소년",
+      "type": "off",
+      "lines": [
+        "어머니가요. 열이 심해서…"
+      ],
+      "box": [
+        970,
+        1912,
+        381,
+        47
+      ],
+      "tail_to": [
+        1160,
+        2268
+      ],
+      "font_size": 34,
+      "align": "center"
+    },
+    {
+      "id": "p008-s01",
+      "panel": 1,
+      "speaker": "SFX",
+      "type": "sfx",
+      "lines": [
+        "바스락"
+      ],
+      "box": [
+        106,
+        96,
+        158,
+        63
+      ],
+      "font_size": 56,
+      "align": "left"
+    }
+  ],
+  "captions": []
+}

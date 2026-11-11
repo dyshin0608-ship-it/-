@@ -1,0 +1,15 @@
+# 생성 이미지 — 용량이 크고 재생성 가능하므로 커밋하지 않는다
+02_pages/*.png
+03_panels/*.png
+04_textless_pages/*.png
+05_final_pages/*.png
+!**/.gitkeep
+
+# 확정 레퍼런스(01_references)는 커밋한다 — 전 에피소드의 기준 자산이기 때문
+# 단, 시험 생성본은 제외
+01_references/*_test_*.png
+01_references/*_wip_*.png
+
+__pycache__/
+*.pyc
+.DS_Store

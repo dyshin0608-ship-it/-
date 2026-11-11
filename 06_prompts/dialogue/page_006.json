@@ -1,0 +1,156 @@
+{
+  "page": 6,
+  "canvas": [
+    1536,
+    2304
+  ],
+  "seed": 7006,
+  "_note": "scaffold.py 자동 배치 초안. box/tail_to 를 눈으로 보고 다듬을 것.",
+  "bubbles": [
+    {
+      "id": "p006-b01",
+      "panel": 1,
+      "speaker": "안나",
+      "type": "normal",
+      "lines": [
+        "저건… 뭐죠?"
+      ],
+      "box": [
+        155,
+        188,
+        188,
+        47
+      ],
+      "tail_to": [
+        309,
+        338
+      ],
+      "font_size": 34,
+      "align": "center"
+    },
+    {
+      "id": "p006-b02",
+      "panel": 5,
+      "speaker": "마리",
+      "type": "normal",
+      "lines": [
+        "수도원 방식이 아니에요."
+      ],
+      "box": [
+        180,
+        719,
+        349,
+        47
+      ],
+      "tail_to": [
+        414,
+        883
+      ],
+      "font_size": 34,
+      "align": "center"
+    },
+    {
+      "id": "p006-b03",
+      "panel": 5,
+      "speaker": "마리",
+      "type": "normal",
+      "lines": [
+        "누군가 여기 있었어요."
+      ],
+      "box": [
+        551,
+        909,
+        317,
+        47
+      ],
+      "tail_to": [
+        650,
+        1014
+      ],
+      "font_size": 34,
+      "align": "center"
+    },
+    {
+      "id": "p006-b04",
+      "panel": 6,
+      "speaker": "안나",
+      "type": "soft",
+      "lines": [
+        "이제 돌아갈까요…?"
+      ],
+      "box": [
+        1088,
+        793,
+        250,
+        42
+      ],
+      "tail_to": [
+        1506,
+        838
+      ],
+      "font_size": 30,
+      "align": "center"
+    },
+    {
+      "id": "p006-b05",
+      "panel": 7,
+      "speaker": "에스텔",
+      "type": "off",
+      "lines": [
+        "좋은 질문이네."
+      ],
+      "box": [
+        1083,
+        948,
+        212,
+        47
+      ],
+      "tail_to": [
+        1506,
+        996
+      ],
+      "font_size": 34,
+      "align": "center"
+    },
+    {
+      "id": "p006-b06",
+      "panel": 8,
+      "speaker": "에스텔",
+      "type": "normal",
+      "lines": [
+        "그 꽃이 궁금해서",
+        "여기까지 온 거지?"
+      ],
+      "box": [
+        166,
+        1596,
+        261,
+        95
+      ],
+      "tail_to": [
+        357,
+        1815
+      ],
+      "font_size": 34,
+      "align": "left"
+    },
+    {
+      "id": "p006-s01",
+      "panel": 6,
+      "speaker": "SFX",
+      "type": "sfx",
+      "lines": [
+        "사아—"
+      ],
+      "box": [
+        1030,
+        672,
+        132,
+        55
+      ],
+      "font_size": 48,
+      "align": "left"
+    }
+  ],
+  "captions": []
+}

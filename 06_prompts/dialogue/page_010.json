@@ -1,0 +1,236 @@
+{
+  "page": 10,
+  "canvas": [
+    1536,
+    2304
+  ],
+  "seed": 7010,
+  "_note": "scaffold.py 자동 배치 초안. box/tail_to 를 눈으로 보고 다듬을 것.",
+  "bubbles": [
+    {
+      "id": "p010-b01",
+      "panel": 1,
+      "speaker": "마리",
+      "type": "normal",
+      "lines": [
+        "저… 배우고 싶어요."
+      ],
+      "box": [
+        170,
+        123,
+        285,
+        47
+      ],
+      "tail_to": [
+        372,
+        287
+      ],
+      "font_size": 34,
+      "align": "center"
+    },
+    {
+      "id": "p010-b02",
+      "panel": 1,
+      "speaker": "에스텔",
+      "type": "off",
+      "lines": [
+        "무엇을?"
+      ],
+      "box": [
+        1277,
+        273,
+        114,
+        47
+      ],
+      "tail_to": [
+        1506,
+        321
+      ],
+      "font_size": 34,
+      "align": "center"
+    },
+    {
+      "id": "p010-b03",
+      "panel": 2,
+      "speaker": "마리",
+      "type": "emphasis",
+      "lines": [
+        "그림이 아니라,",
+        "제대로 보는 법을요."
+      ],
+      "box": [
+        172,
+        465,
+        302,
+        101
+      ],
+      "tail_to": [
+        383,
+        692
+      ],
+      "font_size": 36,
+      "align": "left"
+    },
+    {
+      "id": "p010-b04",
+      "panel": 2,
+      "speaker": "에스텔",
+      "type": "off",
+      "lines": [
+        "수도원 수녀가?"
+      ],
+      "box": [
+        1155,
+        726,
+        220,
+        46
+      ],
+      "tail_to": [
+        1506,
+        774
+      ],
+      "font_size": 34,
+      "align": "center"
+    },
+    {
+      "id": "p010-b05",
+      "panel": 2,
+      "speaker": "마리",
+      "type": "normal",
+      "lines": [
+        "네."
+      ],
+      "box": [
+        133,
+        959,
+        42,
+        47
+      ],
+      "tail_to": [
+        214,
+        1086
+      ],
+      "font_size": 34,
+      "align": "center"
+    },
+    {
+      "id": "p010-b06",
+      "panel": 3,
+      "speaker": "에스텔",
+      "type": "off",
+      "lines": [
+        "그럼 다음엔",
+        "책 말고 손부터 써."
+      ],
+      "box": [
+        166,
+        1270,
+        263,
+        95
+      ],
+      "tail_to": [
+        298,
+        1092
+      ],
+      "font_size": 34,
+      "align": "left"
+    },
+    {
+      "id": "p010-b07",
+      "panel": 4,
+      "speaker": "안나",
+      "type": "normal",
+      "lines": [
+        "…저도 같이 있어도 되죠?"
+      ],
+      "box": [
+        896,
+        1199,
+        367,
+        47
+      ],
+      "tail_to": [
+        1140,
+        1363
+      ],
+      "font_size": 34,
+      "align": "center"
+    },
+    {
+      "id": "p010-b08",
+      "panel": 4,
+      "speaker": "에스텔",
+      "type": "normal",
+      "lines": [
+        "그건 너희가",
+        "얼마나 버티느냐에 달렸지."
+      ],
+      "box": [
+        970,
+        1364,
+        381,
+        95
+      ],
+      "tail_to": [
+        1100,
+        1494
+      ],
+      "font_size": 34,
+      "align": "left"
+    }
+  ],
+  "captions": [
+    {
+      "id": "p010-c01",
+      "panel": 5,
+      "speaker": "마리(N)",
+      "type": "caption",
+      "lines": [
+        "그날 저는 처음으로 알았습니다."
+      ],
+      "box": [
+        128,
+        1870,
+        428,
+        49
+      ],
+      "font_size": 32,
+      "align": "left"
+    },
+    {
+      "id": "p010-c02",
+      "panel": 5,
+      "speaker": "마리(N)",
+      "type": "caption",
+      "lines": [
+        "틀린 그림은 틀린 세계를 만든다는 걸."
+      ],
+      "box": [
+        128,
+        1976,
+        506,
+        49
+      ],
+      "font_size": 32,
+      "align": "left"
+    },
+    {
+      "id": "p010-c03",
+      "panel": 5,
+      "speaker": "마리(N)",
+      "type": "caption",
+      "lines": [
+        "그리고 그 숲에는,",
+        "아직 이름 붙지 않은 진실이 남아 있다는 걸."
+      ],
+      "box": [
+        128,
+        2081,
+        584,
+        102
+      ],
+      "font_size": 32,
+      "align": "left"
+    }
+  ]
+}
