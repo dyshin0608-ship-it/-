@@ -17,3 +17,9 @@ __pycache__/
 # TTS 모델 — 용량이 커서 커밋하지 않는다 (스크립트가 자동으로 내려받음)
 models/
 .narration_tmp.wav
+
+# API 키 — 절대 커밋하지 않는다
+*.key
+gk.txt
+*_key.txt
+.gemini_key
