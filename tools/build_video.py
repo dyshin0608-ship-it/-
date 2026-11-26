@@ -138,10 +138,13 @@ def main():
     ap = argparse.ArgumentParser(description="자막형 영상 생성")
     ap.add_argument("--card", metavar="ID", help="카드 한 장만 png 로 미리보기")
     ap.add_argument("--fps", type=int, default=FPS)
+    ap.add_argument("--audio", type=Path, default=OUT / "narration_full.mp3",
+                    help="영상에 붙일 음성 (기본: 효과음 없는 내레이션)")
+    ap.add_argument("--out", type=Path, default=OUT / "ep1_video.mp4")
     a = ap.parse_args()
 
     tl_path = OUT / "timeline.csv"
-    audio = OUT / "narration_full.mp3"
+    audio = a.audio
     if not tl_path.is_file() or not audio.is_file():
         sys.exit("[오류] final/timeline.csv 와 final/narration_full.mp3 가 필요합니다. "
                  "먼저 python tools/build_final.py 를 실행하세요.")
@@ -183,7 +186,7 @@ def main():
             fh.write(f"file '{f.resolve()}'\nduration {d:.3f}\n")
         fh.write(f"file '{entries[-1][0].resolve()}'\n")   # 마지막 장 한 번 더
 
-    out = OUT / "ep1_video.mp4"
+    out = a.out
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error",
                     "-f", "concat", "-safe", "0", "-i", str(lst),
                     "-i", str(audio),
