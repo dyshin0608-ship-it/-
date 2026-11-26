@@ -80,6 +80,9 @@ def load_wav(p: Path) -> np.ndarray:
 def main():
     ap = argparse.ArgumentParser(description="내레이션에 효과음 얹기")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--level", type=float, default=0.0,
+                    help="모든 효과음 음량을 한꺼번에 올리거나 내린다(dB). 예: -6")
+    ap.add_argument("--out", type=Path, default=OUT)
     a = ap.parse_args()
 
     if not TL.is_file() or not SRC.is_file():
@@ -102,15 +105,16 @@ def main():
             else:
                 at = st + (en - st) * (i / max(1, len(text)))
         for k in range(rep):
-            placed.append({"time": at + k * step, "sfx": name, "gain": gain,
+            placed.append({"time": at + k * step, "sfx": name, "gain": gain + a.level,
                            "id": pid, "note": note})
 
     placed.sort(key=lambda x: x["time"])
     for w in warn:
         print(f"  [경고] {w}")
-    print(f"효과음 {len(placed)}개 / 종류 {len({p['sfx'] for p in placed})}가지")
+    print(f"효과음 {len(placed)}개 / 종류 {len({p['sfx'] for p in placed})}가지"
+          + (f" / 전체 {a.level:+.0f}dB" if a.level else ""))
     for p in placed:
-        print(f"  {tc(p['time']):>10s}  {p['sfx']:10s} {p['gain']:4d}dB  {p['id']}  {p['note']}")
+        print(f"  {tc(p['time']):>10s}  {p['sfx']:10s} {p['gain']:6.1f}dB  {p['id']}  {p['note']}")
 
     with CUES.open("w", encoding="utf-8-sig", newline="") as f:
         w = csv.writer(f)
@@ -145,12 +149,12 @@ def main():
         print(f"\n  최대 진폭 {peak:.2f} → 0.98 로 낮춤")
     data = (np.clip(mix, -1, 1) * 32767).astype("<i2")
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "s16le", "-ar", str(SR),
-                    "-ac", "1", "-i", "pipe:0", "-b:a", "192k", str(OUT)],
+                    "-ac", "1", "-i", "pipe:0", "-b:a", "192k", str(a.out)],
                    input=data.tobytes(), check=True)
     d = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration",
-                              "-of", "default=nw=1:nk=1", str(OUT)],
+                              "-of", "default=nw=1:nk=1", str(a.out)],
                              capture_output=True, text=True, check=True).stdout.strip())
-    print(f"\n{OUT}  {int(d//60)}분 {d%60:.1f}초  {OUT.stat().st_size//1024}KB")
+    print(f"\n{a.out}  {int(d//60)}분 {d%60:.1f}초  {OUT.stat().st_size//1024}KB")
     print(f"{CUES}")
 
 
