@@ -1,0 +1,8 @@
+batch	from	to	lines	chars	file
+1	H01	M01	10	370	batch01_H01-M01.txt
+2	M02	A04	10	373	batch02_M02-A04.txt
+3	A05	B04	10	408	batch03_A05-B04.txt
+4	B05	C04	10	473	batch04_B05-C04.txt
+5	C05	C14	10	510	batch05_C05-C14.txt
+6	C15	D08	10	500	batch06_C15-D08.txt
+7	D09	E05	9	412	batch07_D09-E05.txt
