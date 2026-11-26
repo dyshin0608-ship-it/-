@@ -70,6 +70,11 @@ def tc(x: float) -> str:
     return f"{int(x//60)}:{x%60:06.3f}"
 
 
+def sfx_len(name: str) -> int:
+    with wave.open(str(SFX / f"{name}.wav"), "rb") as w:
+        return w.getnframes()
+
+
 def load_wav(p: Path) -> np.ndarray:
     with wave.open(str(p), "rb") as w:
         if w.getframerate() != SR:
@@ -83,6 +88,8 @@ def main():
     ap.add_argument("--level", type=float, default=0.0,
                     help="모든 효과음 음량을 한꺼번에 올리거나 내린다(dB). 예: -6")
     ap.add_argument("--out", type=Path, default=OUT)
+    ap.add_argument("--duck", type=float, default=5.0,
+                    help="효과음이 울리는 동안 내레이션을 몇 dB 낮출지 (0 이면 끔)")
     a = ap.parse_args()
 
     if not TL.is_file() or not SRC.is_file():
@@ -129,7 +136,26 @@ def main():
                           "-acodec", "pcm_s16le", "-ar", str(SR), "-ac", "1", "-"],
                          capture_output=True, check=True).stdout
     base = np.frombuffer(raw, dtype="<i2").astype(np.float32) / 32768
-    mix = base.copy()
+    # 효과음이 울리는 구간만 내레이션을 잠깐 낮춘다(더킹).
+    # 말소리와 겹치면 효과음을 키워도 가려지기만 하고 시끄러워지기 때문이다.
+    duck = np.ones_like(base)
+    if a.duck > 0:
+        lo = 10 ** (-a.duck / 20)
+        fi, fo = int(0.04 * SR), int(0.16 * SR)
+        for p_ in placed:
+            n = sfx_len(p_["sfx"])
+            i = int(p_["time"] * SR)
+            j = min(i + n, duck.size)
+            if j <= i:
+                continue
+            seg = np.full(j - i, lo)
+            k = min(fi, seg.size)
+            seg[:k] = np.linspace(1.0, lo, k)
+            duck[i:j] = np.minimum(duck[i:j], seg)
+            e = min(j + fo, duck.size)
+            if e > j:
+                duck[j:e] = np.minimum(duck[j:e], np.linspace(lo, 1.0, e - j))
+    mix = base * duck
     cache = {}
     for p in placed:
         if p["sfx"] not in cache:
@@ -154,6 +180,8 @@ def main():
     d = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration",
                               "-of", "default=nw=1:nk=1", str(a.out)],
                              capture_output=True, text=True, check=True).stdout.strip())
+    if a.duck > 0:
+        print(f"  효과음 구간 내레이션 -{a.duck:.0f}dB 더킹")
     print(f"\n{a.out}  {int(d//60)}분 {d%60:.1f}초  {OUT.stat().st_size//1024}KB")
     print(f"{CUES}")
 
