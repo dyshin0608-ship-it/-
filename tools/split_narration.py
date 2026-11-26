@@ -97,6 +97,8 @@ def main():
     ap.add_argument("--noise", default="-33dB")
     ap.add_argument("--min-sil", type=float, default=0.22)
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--auto", action="store_true",
+                    help="무음 기준을 여러 값으로 시도해 가장 고른 경계를 고른다")
     a = ap.parse_args()
 
     if not a.source.is_file():
@@ -117,7 +119,31 @@ def main():
     texts = allt[i0:i1 + 1]
 
     total = duration(a.source)
-    cands = silence_midpoints(a.source, a.noise, a.min_sil, total)
+
+    def evaluate(min_sil):
+        """경계를 잡고, 줄마다 '초당 글자수'가 얼마나 고른지로 점수를 낸다."""
+        c = silence_midpoints(a.source, a.noise, min_sil, total)
+        if len(c) < len(texts) - 1:
+            return None
+        bnd, _ = snap_boundaries(texts, total, c)
+        rates = [len(t) / max(0.05, bnd[i + 1] - bnd[i]) for i, (_, t) in enumerate(texts)]
+        mid = sorted(rates)[len(rates) // 2]
+        worst = max(max(r / mid, mid / r) for r in rates)   # 1.0 이면 완벽히 고름
+        return worst, c
+
+    if a.auto:
+        best = None
+        for ms in (0.12, 0.16, 0.20, 0.24, 0.28, 0.34, 0.40, 0.50):
+            got = evaluate(ms)
+            if got and (best is None or got[0] < best[0]):
+                best = (got[0], ms, got[1])
+        if best:
+            print(f"  자동 선택: --min-sil {best[1]:.2f} (최악 편차 {best[0]:.2f}배)")
+            a.min_sil, cands = best[1], best[2]
+        else:
+            cands = silence_midpoints(a.source, a.noise, a.min_sil, total)
+    else:
+        cands = silence_midpoints(a.source, a.noise, a.min_sil, total)
     cps = sum(len(t) for _, t in texts) / total
     print(f"음원 {total:.1f}초 / 대상 {len(texts)}줄 ({texts[0][0]}~{texts[-1][0]}) "
           f"/ 무음 후보 {len(cands)}개 / 평균 {cps:.1f}자/초")
