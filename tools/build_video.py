@@ -48,6 +48,23 @@ SECTIONS = {
     "E": ("", "다음 편"),
 }
 RUNG = {"A": 1, "B": 2, "C": 3, "D": 4}
+
+# 게임 UI — 채널 컨셉(현실 RPG)에 맞춘 레벨 표시
+LEVELS = {
+    "H": (0, "현장 입문"), "M": (0, "현장 입문"),
+    "A": (1, "안전감시원"), "B": (2, "안전감시단"),
+    "C": (3, "안전 담당"),  "D": (4, "안전관리자"),
+    "E": (4, "안전관리자"),
+}
+QUEST = {                      # 각 레벨 첫 컷에 띄우는 퀘스트 창
+    "A01": ("현장에 들어가는 법을 알아보자", 100),
+    "B01": ("현장 전체를 보는 자리로 올라가자", 100),
+    "C01": ("작은 현장의 안전을 통째로 맡아보자", 100),
+    "D01": ("선임보고서에 이름을 올려보자", 200),
+}
+PORTRAIT = Path("brand/assets/02_logo_circle.png")
+HEART = (228, 72, 84)
+EXP_BAR = (108, 196, 92)
 NUM = re.compile(r"\d[\d,]*\s?(?:억|만|천|원|명|일|시|년|분기|칸|개월|배|장|%)?")
 
 
@@ -80,7 +97,62 @@ def wrap(draw, text, font, maxw):
     return lines
 
 
-def draw_card(text: str, section: str) -> Image.Image:
+def heart(d, cx, cy, r, color):
+    d.ellipse([cx - r, cy - r * 0.95, cx, cy + r * 0.15], fill=color)
+    d.ellipse([cx, cy - r * 0.95, cx + r, cy + r * 0.15], fill=color)
+    d.polygon([(cx - r, cy - r * 0.1), (cx + r, cy - r * 0.1), (cx, cy + r)], fill=color)
+
+
+def draw_hud(d, img, section: str, progress: float):
+    """좌상단 게임 UI — 초상화, 레벨, 하트, 경험치 바."""
+    lv, title = LEVELS.get(section, (0, ""))
+    x, y = 80, 62
+    box = 112
+    d.rounded_rectangle([x - 6, y - 6, x + box + 6, y + box + 6], 14,
+                        fill=(30, 33, 38), outline=ACCENT, width=3)
+    if PORTRAIT.is_file():
+        pt = Image.open(PORTRAIT).convert("RGB")
+        side = min(pt.size)
+        pt = pt.crop(((pt.width - side) // 2, 0, (pt.width + side) // 2, side))
+        img.paste(pt.resize((box, box), Image.LANCZOS), (x, y))
+
+    tx = x + box + 26
+    f_lv = ImageFont.truetype(str(FONT_B), 42)
+    label = f"Lv.{lv} {title}" if lv else f"Lv.? {title}"
+    d.text((tx, y - 2), label, font=f_lv, fill=FG)
+
+    for i in range(3):                       # 체력 하트
+        heart(d, tx + 14 + i * 40, y + 62, 13, HEART)
+
+    bx, by, bw, bh = tx, y + 86, 400, 18     # 경험치 바
+    d.rounded_rectangle([bx, by, bx + bw, by + bh], 9, fill=(46, 50, 57))
+    fill = int(bw * max(0.0, min(1.0, progress)))
+    if fill > 6:
+        d.rounded_rectangle([bx, by, bx + fill, by + bh], 9, fill=EXP_BAR)
+    f_s = ImageFont.truetype(str(FONT_R), 24)
+    d.text((bx + bw + 16, by - 4), f"EXP {int(progress*100)}%", font=f_s, fill=DIM)
+
+
+def draw_quest(d, pid: str):
+    """레벨이 바뀌는 컷에만 띄우는 퀘스트 창."""
+    if pid not in QUEST:
+        return
+    goal, exp = QUEST[pid]
+    f_h = ImageFont.truetype(str(FONT_B), 34)
+    f_g = ImageFont.truetype(str(FONT_B), 40)
+    f_r = ImageFont.truetype(str(FONT_R), 28)
+    w = max(d.textlength(goal, font=f_g), 520) + 88
+    h = 196
+    x, y = (W - w) / 2, H - h - 96
+    d.rounded_rectangle([x, y, x + w, y + h], 18, fill=(28, 31, 36), outline=ACCENT, width=3)
+    d.polygon([(x + 44, y + 40), (x + 58, y + 26), (x + 72, y + 40), (x + 58, y + 54)], fill=ACCENT)
+    d.text((x + 88, y + 22), "신규 퀘스트", font=f_h, fill=ACCENT)
+    d.text((x + 44, y + 78), goal, font=f_g, fill=FG)
+    d.text((x + 44, y + 136), f"보상 : 직업 지식 +{exp} EXP", font=f_r, fill=DIM)
+
+
+def draw_card(text: str, section: str, progress: float = 0.0,
+              pid: str = "") -> Image.Image:
     img = Image.new("RGB", (W, H), BG)
     d = ImageDraw.Draw(img)
     # 위아래로 아주 옅은 명암
@@ -89,26 +161,23 @@ def draw_card(text: str, section: str) -> Image.Image:
         c = tuple(int(BG[i] + (BG2[i] - BG[i]) * k * 0.9) for i in range(3))
         d.line([(0, y), (W, y)], fill=c)
 
+    draw_hud(d, img, section, progress)
     tag, title = SECTIONS.get(section, ("", ""))
     f_tag = ImageFont.truetype(str(FONT_B), 34)
     f_title = ImageFont.truetype(str(FONT_R), 30)
-    if tag:
-        d.rounded_rectangle([96, 78, 96 + 104, 78 + 50], 8, fill=ACCENT)
-        tw = d.textlength(tag, font=f_tag)
-        d.text((96 + (104 - tw) / 2, 86), tag, font=f_tag, fill=(24, 20, 14))
-        d.text((96 + 124, 88), title, font=f_title, fill=DIM)
-    else:
-        d.text((96, 88), title, font=f_title, fill=DIM)
+    # A~D 는 레벨 이름이 곧 직급이라 머리말을 또 쓰면 겹친다
+    if section not in RUNG:
+        d.text((80, 214), title, font=f_title, fill=DIM)
 
     # 사다리 표시 (A~D 구간에서만)
     if section in RUNG:
-        x0, y0, bw, bh, gap = W - 96 - (4 * 44 + 3 * 10), 86, 44, 12, 10
+        x0, y0, bw, bh, gap = W - 96 - (4 * 44 + 3 * 10), 92, 44, 12, 10
         for i in range(4):
             on = i < RUNG[section]
             d.rounded_rectangle([x0 + i * (bw + gap), y0, x0 + i * (bw + gap) + bw, y0 + bh],
                                 4, fill=ACCENT if on else RULE)
 
-    d.line([(96, 158), (W - 96, 158)], fill=RULE, width=2)
+    d.line([(80, 262), (W - 80, 262)], fill=RULE, width=2)
 
     # 본문 — 길이에 따라 글자 크기를 줄여 한 화면에 담는다
     maxw = W - 2 * 170
@@ -116,10 +185,10 @@ def draw_card(text: str, section: str) -> Image.Image:
         f = ImageFont.truetype(str(FONT_B), size)
         lines = wrap(d, text, f, maxw)
         lh = size * 1.52
-        if len(lines) * lh <= H - 420:
+        if len(lines) * lh <= H - 560:
             break
     total = len(lines) * lh
-    y = (H - total) / 2 + 40
+    y = (H - total) / 2 + 70
     for ln in lines:
         hot = set()
         for m in NUM.finditer(ln):
@@ -131,6 +200,7 @@ def draw_card(text: str, section: str) -> Image.Image:
                 d.text((x, y), c, font=f, fill=ACCENT if i in hot else FG)
             x += widths[i]
         y += lh
+    draw_quest(d, pid)
     return img
 
 
@@ -158,7 +228,7 @@ def main():
         if not r:
             sys.exit(f"[오류] 없는 ID: {a.card}")
         p = OUT / f"card_{a.card}.png"
-        draw_card(r["대사"], r["구간"]).save(p)
+        draw_card(r["대사"], r["구간"], 0.5, a.card).save(p)
         print(f"미리보기 → {p}")
         return
 
@@ -174,7 +244,7 @@ def main():
     for i, r in enumerate(rows):
         start = sec(r["시작"])
         end = sec(rows[i + 1]["시작"]) if i + 1 < len(rows) else total_dur
-        img = draw_card(r["대사"], r["구간"])
+        img = draw_card(r["대사"], r["구간"], i / max(1, len(rows) - 1), r["ID"])
         f = frames / f"{i:03d}.png"
         img.save(f)
         entries.append((f, end - start))
