@@ -47,15 +47,17 @@ def main():
     ap = argparse.ArgumentParser(description="앞뒤 무음 정리")
     ap.add_argument("--head", type=float, default=0.08, help="말소리 앞에 남길 여백(초)")
     ap.add_argument("--tail", type=float, default=0.15, help="말소리 뒤에 남길 여백(초)")
+    ap.add_argument("--script", type=Path, default=SCRIPT)
+    ap.add_argument("--audio", type=Path, default=AUDIO)
     ap.add_argument("--dry-run", action="store_true")
     a = ap.parse_args()
 
     ids = [l.split("\t", 1)[0] for l in
-           SCRIPT.read_text(encoding="utf-8").splitlines() if l.strip()]
+           a.script.read_text(encoding="utf-8").splitlines() if l.strip()]
     before = after = 0.0
     changed = 0
     for pid in ids:
-        f = AUDIO / f"{pid}.mp3"
+        f = a.audio / f"{pid}.mp3"
         if not f.is_file():
             print(f"  {pid}: 파일 없음"); continue
         sp = speech_span(f)

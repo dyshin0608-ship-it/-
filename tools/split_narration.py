@@ -94,17 +94,23 @@ def main():
     ap.add_argument("source", type=Path)
     ap.add_argument("--from", dest="frm", help="첫 줄 ID (예: H01)")
     ap.add_argument("--to", dest="to", help="끝 줄 ID (예: M01)")
+    ap.add_argument("--script", type=Path, default=SCRIPT, help="원고 TSV")
+    ap.add_argument("--pronounce", type=Path, default=PRONOUNCE, help="발음 교정표")
+    ap.add_argument("--outdir", type=Path, default=OUTDIR, help="자른 파일을 둘 폴더")
     ap.add_argument("--noise", default="-33dB")
     ap.add_argument("--min-sil", type=float, default=0.22)
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--at", action="append", default=[], metavar="ID=초",
+                    help="그 줄이 끝나는 시각을 직접 지정한다. 문장이 둘 이상인 줄은\n"
+                         "중간 쉼을 문장 끝으로 잘못 고를 수 있어 이걸로 바로잡는다.")
     ap.add_argument("--auto", action="store_true",
                     help="무음 기준을 여러 값으로 시도해 가장 고른 경계를 고른다")
     a = ap.parse_args()
 
     if not a.source.is_file():
         sys.exit(f"[오류] 음원 없음: {a.source}")
-    rows = load_tsv(SCRIPT)
-    over = dict(load_tsv(PRONOUNCE, comments=True))
+    rows = load_tsv(a.script)
+    over = dict(load_tsv(a.pronounce, comments=True)) if a.pronounce.is_file() else {}
     allt = [(p, over.get(p, t)) for p, t in rows]
     ids = [p for p, _ in allt]
 
@@ -156,6 +162,23 @@ def main():
               f"--min-sil {max(0.12, a.min_sil-0.08):.2f} 로 낮춰보세요.")
 
     bounds, expected = snap_boundaries(texts, total, cands)
+
+    # 직접 지정한 경계를 덮어쓴다
+    if a.at:
+        idx = {pid: i for i, (pid, _) in enumerate(texts)}
+        for item in a.at:
+            k, _, v = item.partition("=")
+            k = k.strip()
+            if k not in idx:
+                sys.exit(f"[오류] --at 의 ID 가 이 묶음에 없습니다: {k}")
+            i = idx[k]
+            if i == len(texts) - 1:
+                sys.exit(f"[오류] 마지막 줄({k})의 끝은 지정할 수 없습니다")
+            bounds[i + 1] = float(v)
+            print(f"  경계 지정: {k} 끝 = {float(v):.2f}초")
+        for i in range(1, len(bounds)):
+            if bounds[i] <= bounds[i - 1]:
+                sys.exit(f"[오류] 지정한 경계가 순서를 깨뜨립니다 ({bounds[i-1]:.2f} → {bounds[i]:.2f})")
     drift = [abs(bounds[i + 1] - expected[i]) for i in range(len(expected))]
     if drift:
         print(f"  예상 경계와의 차이: 평균 {sum(drift)/len(drift):.2f}초 / 최대 {max(drift):.2f}초")
@@ -168,18 +191,18 @@ def main():
             print(f"  {pid}  {s:7.2f} → {e:7.2f}  ({e-s:4.1f}s)  {t[:32]}")
         return
 
-    OUTDIR.mkdir(parents=True, exist_ok=True)
+    a.outdir.mkdir(parents=True, exist_ok=True)
     for i, (pid, _) in enumerate(texts):
         s = max(0.0, bounds[i] - PAD)
         d = (bounds[i + 1] - bounds[i]) + PAD * 2
-        dest = OUTDIR / f"{pid}.mp3"
+        dest = a.outdir / f"{pid}.mp3"
         subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-ss", f"{s:.3f}",
                         "-t", f"{d:.3f}", "-i", str(a.source),
                         "-af", f"loudnorm=I={LUFS}:TP=-1.5:LRA=11",
                         "-ar", "44100", "-ac", "1", "-b:a", "128k", str(dest)],
                        check=True)
         print(f"  {pid}.mp3  {d:4.1f}s  {dest.stat().st_size // 1024}KB")
-    print(f"\n{len(texts)}개 생성 → {OUTDIR}/")
+    print(f"\n{len(texts)}개 생성 → {a.outdir}/")
 
 
 if __name__ == "__main__":
