@@ -24,6 +24,7 @@ import numpy as np
 SR = 44100
 SCRIPT = Path("narration/ep2_script.tsv")
 AUDIO = Path("audio_ep2")
+SKIP = Path("narration/ep2_skip.txt")
 OUT = Path("final_ep2")
 
 
@@ -59,8 +60,13 @@ def wrap2(text: str, width: int = 32) -> list[str]:
 
 
 def srt_tc(x: float) -> str:
-    h = int(x // 3600); m = int(x % 3600 // 60); s = x % 60
-    return f"{h:02d}:{m:02d}:{int(s):02d},{int(round((s-int(s))*1000)):03d}"
+    # 초를 먼저 자르고 소수부를 따로 반올림하면 1ms 가 어긋난다.
+    # 전체를 밀리초로 바꾼 뒤 쪼갠다.
+    ms = int(x * 1000 + 0.5)
+    h, ms = divmod(ms, 3600000)
+    m, ms = divmod(ms, 60000)
+    sec, ms = divmod(ms, 1000)
+    return f"{h:02d}:{m:02d}:{sec:02d},{ms:03d}"
 
 
 def pcm(path: Path) -> np.ndarray:
@@ -79,8 +85,17 @@ def main():
 
     pairs = [l.split("\t", 1) for l in
              SCRIPT.read_text(encoding="utf-8").splitlines() if l.strip()]
-    ids = [p for p, _ in pairs]
     text_of = dict(pairs)
+    skip = set()
+    if SKIP.is_file():
+        skip = {l.strip() for l in SKIP.read_text(encoding="utf-8").splitlines()
+                if l.strip() and not l.lstrip().startswith("#")}
+        unknown = skip - set(text_of)
+        if unknown:
+            sys.exit(f"[오류] 제외 목록에 원고에 없는 ID: {sorted(unknown)}")
+    ids = [p for p, _ in pairs if p not in skip]
+    if skip:
+        print(f"제외: {' '.join(sorted(skip))}  ({len(pairs)}줄 → {len(ids)}줄)")
     missing = [i for i in ids if not (AUDIO / f"{i}.mp3").is_file()]
     if missing:
         sys.exit(f"[오류] 음성이 없는 줄: {' '.join(missing)}")
