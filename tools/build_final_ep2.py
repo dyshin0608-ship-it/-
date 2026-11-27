@@ -6,6 +6,7 @@ build_final_ep2.py — 2편 줄 음성을 이어 붙이고 타임코드를 낸�
         ↓
   final_ep2/narration_full.mp3
   final_ep2/timeline.csv      (ID, 시작, 끝  /  00:00:00.000)
+  final_ep2/narration.srt     자막 (한 줄 최대 32자, 최대 2줄)
 
 mp3 를 이어 붙이면 프레임 단위 오차가 쌓여 뒤로 갈수록 시각이 밀린다.
 각 줄을 PCM 으로 풀어 샘플 위치에 직접 얹는다.
@@ -38,6 +39,30 @@ def tc(x: float) -> str:
     return f"{h:02d}:{m:02d}:{s:06.3f}"
 
 
+def wrap2(text: str, width: int = 32) -> list[str]:
+    """어절 단위로 끊어 최대 두 줄로 만든다. 자막은 세 줄부터 화면을 가린다."""
+    lines, cur = [], ""
+    for w in text.split(" "):
+        cand = w if not cur else cur + " " + w
+        if len(cand) <= width:
+            cur = cand
+        else:
+            if cur:
+                lines.append(cur)
+            cur = w
+    if cur:
+        lines.append(cur)
+    if len(lines) <= 2:
+        return lines
+    # 세 줄 이상이면 길이를 키워 두 줄로 맞춘다
+    return wrap2(text, width + 6)
+
+
+def srt_tc(x: float) -> str:
+    h = int(x // 3600); m = int(x % 3600 // 60); s = x % 60
+    return f"{h:02d}:{m:02d}:{int(s):02d},{int(round((s-int(s))*1000)):03d}"
+
+
 def pcm(path: Path) -> np.ndarray:
     raw = subprocess.run(
         ["ffmpeg", "-v", "error", "-i", str(path), "-f", "s16le",
@@ -52,8 +77,10 @@ def main():
     ap.add_argument("--section-gap", type=float, default=1.0, help="구간 전환 간격(초)")
     a = ap.parse_args()
 
-    ids = [l.split("\t", 1)[0] for l in
-           SCRIPT.read_text(encoding="utf-8").splitlines() if l.strip()]
+    pairs = [l.split("\t", 1) for l in
+             SCRIPT.read_text(encoding="utf-8").splitlines() if l.strip()]
+    ids = [p for p, _ in pairs]
+    text_of = dict(pairs)
     missing = [i for i in ids if not (AUDIO / f"{i}.mp3").is_file()]
     if missing:
         sys.exit(f"[오류] 음성이 없는 줄: {' '.join(missing)}")
@@ -90,8 +117,14 @@ def main():
         for r in rows:
             w.writerow([r["id"], tc(r["start"]), tc(r["end"])])
 
+    with (OUT / "narration.srt").open("w", encoding="utf-8") as f:
+        for i, r in enumerate(rows, 1):
+            body = "\n".join(wrap2(text_of[r["id"]]))
+            f.write(f"{i}\n{srt_tc(r['start'])} --> {srt_tc(r['end'])}\n{body}\n\n")
+
     real = dur(full)
     print(f"{full}  {int(real//60)}분 {real%60:.1f}초  {full.stat().st_size//1024}KB")
+    print(f"{OUT}/narration.srt  {len(rows)}개")
     print(f"{OUT}/timeline.csv  {len(rows)}줄  (계산값 {tc(total)})")
     cur = None
     for r in rows:
